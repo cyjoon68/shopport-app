@@ -1,0 +1,51 @@
+name: integration
+
+on:
+  pull_request:
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.20.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+          cache-dependency-path: |
+            shopport-be/pnpm-lock.yaml
+            shopport-fe/pnpm-lock.yaml
+      - run: pnpm --dir shopport-be install --frozen-lockfile
+      - run: pnpm --dir shopport-fe install --frozen-lockfile
+      - run: ./scripts/check-submodules.sh
+      - run: node ./scripts/check-graphql-contract.mjs
+      - run: pnpm --dir shopport-fe codegen && git -C shopport-fe diff --exit-code
+
+  integration-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - run: ./scripts/run-integration-e2e.sh
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

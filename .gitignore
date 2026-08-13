@@ -1,0 +1,11 @@
+.DS_Store
+.codegraph/
+.env
+.env.*
+!.env.example
+.idea/
+.local/
+.vscode/
+*.log
+artifacts/
+test-results/
