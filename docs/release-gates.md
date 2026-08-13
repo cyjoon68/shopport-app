@@ -24,8 +24,8 @@
 ## 외부 입력 전에는 출시 불가
 
 - dev/staging/prod AWS account ID, domain, DNS delegation
-- Apple, Kakao, RevenueCat, EAS, Datadog, Sentry, LLM credential
+- Apple, Kakao, RevenueCat, EAS, Datadog, Sentry, Command Code credential
 - 승인된 실제 shopping provider 최소 1개와 공식 명세
-- 실제 multimodal LLM vendor/model 선택
+- Command Code production account, `COMMAND_CODE_API_KEY`, 데이터 처리 약관 승인
 - store 상품·가격, 개인정보처리방침, affiliate 고지, App Review demo account
 - 실제 기기/IAP sandbox E2E, 10배 peak 부하, restore·alert·source map 증적

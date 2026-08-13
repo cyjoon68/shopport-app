@@ -10,7 +10,7 @@ flowchart LR
   API --> SEARCH["OpenSearch"]
   API --> SQS["SQS + DLQ"]
   API --> PROVIDERS["Approved catalog APIs"]
-  API --> LLM["Configured multimodal LLM"]
+  API --> LLM["Command Code Provider API / gpt-5.4-mini / ZDR"]
   S3["Private S3"] --> LAMBDA["Image Lambda"]
   LAMBDA --> SQS
   SQS --> WORKER["NestJS worker on EKS"]
