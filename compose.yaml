@@ -1,0 +1,147 @@
+name: shopport
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: shopport
+      POSTGRES_PASSWORD: shopport
+      POSTGRES_USER: shopport
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopport -d shopport"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  opensearch:
+    image: opensearchproject/opensearch:2.19.1
+    profiles: ["full"]
+    environment:
+      discovery.type: single-node
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "${OPENSEARCH_PORT:-9200}:9200"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:9200/_cluster/health >/dev/null",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  localstack:
+    image: localstack/localstack:4.3.0
+    environment:
+      AWS_DEFAULT_REGION: ap-northeast-2
+      SERVICES: s3,sqs
+    ports:
+      - "${LOCALSTACK_PORT:-4566}:4566"
+    volumes:
+      - "./dev/localstack/10-shopport.sh:/etc/localstack/init/ready.d/10-shopport.sh:ro"
+      - localstack-data:/var/lib/localstack
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:4566/_localstack/health >/dev/null",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    build:
+      context: ./shopport-be
+      target: runtime
+    command: ["node", "dist/scripts/migrate.js"]
+    environment: &backend-environment
+      NODE_ENV: development
+      DATABASE_URL: postgresql://shopport:shopport@postgres:5432/shopport
+      REDIS_URL: redis://redis:6379
+      AWS_REGION: ap-northeast-2
+      AWS_ENDPOINT_URL: http://localstack:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      ASSET_BUCKET: shopport-assets
+      ASSET_CDN_HOST: localhost
+      SQS_ASSET_RESULT_URL: http://localstack:4566/000000000000/shopport-asset-results
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-32-bytes}
+      CATALOG_MODE: fake
+      ALLOW_DEMO_AUTH: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./shopport-be
+      target: runtime
+    environment: *backend-environment
+    ports:
+      - "${API_PORT:-4000}:4000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+
+  worker:
+    build:
+      context: ./shopport-be
+      target: runtime
+    command: ["node", "dist/src/worker.js"]
+    environment: *backend-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+
+volumes:
+  localstack-data:
+  opensearch-data:
+  postgres-data:
+  redis-data:

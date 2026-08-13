@@ -1,0 +1,9 @@
+[submodule "shopport-fe"]
+	path = shopport-fe
+	url = https://github.com/cyjoon68/shopport-fe.git
+[submodule "shopport-be"]
+	path = shopport-be
+	url = https://github.com/cyjoon68/shopport-be.git
+[submodule "shopport-infra"]
+	path = shopport-infra
+	url = https://github.com/cyjoon68/shopport-infra.git
