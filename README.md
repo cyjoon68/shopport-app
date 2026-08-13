@@ -44,6 +44,7 @@ pnpm start
 - [아키텍처](docs/architecture.md)
 - [개발·CI/CD](docs/development.md)
 - [Provider 승인 정책](docs/providers.md)
+- [AI provider](docs/ai-provider.md)
 - [개인정보·데이터 수명주기](docs/privacy-lifecycle.md)
 - [운영 runbook](docs/runbooks.md)
 - [테스트·출시 게이트](docs/release-gates.md)
