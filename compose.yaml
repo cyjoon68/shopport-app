@@ -93,6 +93,7 @@ services:
       ASSET_CDN_HOST: localhost
       SQS_ASSET_RESULT_URL: http://localstack:4566/000000000000/shopport-asset-results
       JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-32-bytes}
+      KAKAO_NATIVE_APP_KEY: ${KAKAO_NATIVE_APP_KEY:-local-kakao-key}
       AI_MODE: ${AI_MODE:-fake}
       COMMAND_CODE_API_KEY: ${COMMAND_CODE_API_KEY:-}
       COMMAND_CODE_MODEL: ${COMMAND_CODE_MODEL:-gpt-5.4-mini}
