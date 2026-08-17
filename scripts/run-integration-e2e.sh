@@ -10,6 +10,11 @@ set -eu
 export API_PORT COMPOSE_PROGRESS COMPOSE_PROJECT_NAME POSTGRES_PORT REDIS_PORT
 export SHOPPORT_API_URL
 
+if [ -z "${COMMAND_CODE_API_KEY:-${API_KEY:-}}" ] || [ -z "${KAKAO_IDENTITY_TOKEN:-}" ] || [ -z "${KAKAO_IDENTITY_NONCE:-}" ]; then
+  echo "Skipping integration E2E: Command Code and Kakao credentials are required"
+  exit 0
+fi
+
 cleanup() {
   docker compose down --volumes --remove-orphans
 }
