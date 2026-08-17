@@ -2,6 +2,8 @@ import http from "k6/http";
 import { check } from "k6";
 
 const apiUrl = __ENV.SHOPPORT_API_URL || "http://127.0.0.1:4000";
+const kakaoIdentityToken = __ENV.KAKAO_IDENTITY_TOKEN;
+const kakaoIdentityNonce = __ENV.KAKAO_IDENTITY_NONCE;
 const profile = __ENV.PROFILE || "smoke";
 
 const scenarios = {
@@ -48,9 +50,15 @@ const uuid = () =>
   });
 
 export function setup() {
+  if (!kakaoIdentityToken || !kakaoIdentityNonce) {
+    throw new Error("KAKAO_IDENTITY_TOKEN and KAKAO_IDENTITY_NONCE are required");
+  }
   const login = http.post(
-    `${apiUrl}/v1/auth/apple`,
-    JSON.stringify({ identityToken: "demo", nonce: uuid() }),
+    `${apiUrl}/v1/auth/kakao`,
+    JSON.stringify({
+      identityToken: kakaoIdentityToken,
+      nonce: kakaoIdentityNonce,
+    }),
     { headers: { "content-type": "application/json" } },
   );
   check(login, { "login succeeds": (response) => response.status === 200 });

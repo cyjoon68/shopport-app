@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 const baseUrl = process.env.SHOPPORT_API_URL ?? "http://127.0.0.1:4000";
+const kakaoIdentityToken = process.env.KAKAO_IDENTITY_TOKEN;
+const kakaoIdentityNonce = process.env.KAKAO_IDENTITY_NONCE;
+assert.ok(kakaoIdentityToken, "KAKAO_IDENTITY_TOKEN is required");
+assert.ok(kakaoIdentityNonce, "KAKAO_IDENTITY_NONCE is required");
 const uuidV7Pattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 
@@ -46,9 +50,12 @@ const graphql = (token, query, variables = {}) =>
 const health = await json("/health/ready");
 assert.equal(health.status, "ok");
 
-const login = await json("/v1/auth/apple", {
+const login = await json("/v1/auth/kakao", {
   method: "POST",
-  body: JSON.stringify({ identityToken: "demo", nonce: randomUUID() }),
+  body: JSON.stringify({
+    identityToken: kakaoIdentityToken,
+    nonce: kakaoIdentityNonce,
+  }),
 });
 assert.equal(login.expiresIn, 900);
 assert.ok(login.accessToken);
