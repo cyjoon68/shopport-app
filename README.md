@@ -23,11 +23,11 @@ cp .env.example .env
 make dev-core
 ```
 
-`make dev-core`는 PostgreSQL, Redis, LocalStack, migration, API, worker와 API 내부 fake AI/catalog adapter를 실행합니다. OpenSearch까지 포함하려면 `make dev`를 사용합니다.
+`make dev-core`는 PostgreSQL, Redis, LocalStack, migration, API, worker와 Command Code AI 및 catalog provider를 실행합니다. OpenSearch까지 포함하려면 `make dev`를 사용합니다.
 
 ```bash
 make contract
-node scripts/integration-e2e.mjs
+KAKAO_IDENTITY_TOKEN=... KAKAO_IDENTITY_NONCE=... node scripts/integration-e2e.mjs
 make down
 ```
 

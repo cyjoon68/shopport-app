@@ -14,7 +14,7 @@
 - iOS 16.4/latest, Android 7/latest 실제 기기와 iPhone/iPad/Android phone/tablet
 - phone overlay Drawer, tablet permanent Drawer, 회전, split view, nested Stack
 - Dynamic Type 최대, VoiceOver/TalkBack, keyboard, Reduce Motion
-- Apple/Kakao 취소·위조·audience·nonce, refresh replay, logout, 계정 삭제
+- Kakao 취소·위조·audience·nonce, refresh replay, logout, 계정 삭제
 - 168시간 trial 경계, KST reset, text/image quota, reconnect 중복 차감
 - RevenueCat 월간/연간 purchase·restore·cancel·중복/역순 webhook
 - malformed/oversized/HEIC, EXIF 제거, 원본 24시간 lifecycle
@@ -24,7 +24,7 @@
 ## 외부 입력 전에는 출시 불가
 
 - dev/staging/prod AWS account ID, domain, DNS delegation
-- Apple, Kakao, RevenueCat, EAS, Datadog, Sentry, Command Code credential
+- Kakao, RevenueCat, EAS, Datadog, Sentry, Command Code credential
 - 승인된 실제 shopping provider 최소 1개와 공식 명세
 - Command Code production account, `COMMAND_CODE_API_KEY`, 데이터 처리 약관 승인
 - store 상품·가격, 개인정보처리방침, affiliate 고지, App Review demo account
