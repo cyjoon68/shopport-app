@@ -9,3 +9,5 @@
 *.log
 artifacts/
 test-results/
+.omo
+_workspace
