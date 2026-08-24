@@ -11,20 +11,20 @@
 
 ## 수동 matrix
 
-- Maestro flow와 iOS 16.4/latest, Android 7/latest 실제 기기 및 iPhone/iPad/Android phone/tablet
+- Maestro flow와 iOS 18.0/latest, Android 10/latest 실제 기기 및 iPhone/iPad/Android phone/tablet
 - phone overlay Drawer, tablet permanent Drawer, 회전, split view, nested Stack
 - Dynamic Type 최대, VoiceOver/TalkBack, keyboard, Reduce Motion
 - Kakao 취소·위조·audience·nonce, refresh replay, logout, 계정 삭제
 - AI 무제한 실행, reconnect 중복 실행 방지, cancel 멱등성
 - malformed/oversized/HEIC, EXIF 제거, 원본 24시간 lifecycle
 - provider timeout/rate limit/stale offer/non-approved visibility와 neutral ranking
-- Aurora/Redis failover, pod drain, SQS redrive, Argo rollback, backup restore
+- Aurora failover, pod drain, SQS redrive, Argo rollback, backup restore
 
 ## 외부 입력 전에는 출시 불가
 
 - dev/staging/prod AWS account ID, domain, DNS delegation
-- Kakao, EAS, Datadog, Sentry, Command Code credential
+- Kakao, EAS, Datadog, Sentry, AI provider credential
 - 승인된 실제 shopping provider 최소 1개와 공식 명세
-- Command Code production account, `COMMAND_CODE_API_KEY`, 데이터 처리 약관 승인
+- AI provider production account, `PROVIDER_API_KEY`, 데이터 처리 약관 승인
 - store 메타데이터, 개인정보처리방침, affiliate 고지, App Review demo account
 - 실제 기기 E2E, 10배 peak 부하, restore·alert·source map 증적

@@ -1,6 +1,6 @@
 # AI provider
 
-Shopport의 AI provider는 [Command Code Provider API](https://commandcode.ai/docs/provider)입니다. 기본 multimodal model은 `gpt-5.4-mini`이며 `COMMAND_CODE_MODEL`로 교체할 수 있습니다.
+Shopport의 AI provider는 [Command Code Provider API](https://commandcode.ai/docs/provider)입니다. 기본 multimodal model은 `gpt-5.4-mini`이며 `PROVIDER_MODEL`로 교체할 수 있습니다.
 
 백엔드는 OpenAI Chat Completions 호환 endpoint `https://api.commandcode.ai/provider/v1/chat/completions`만 호출합니다. Claude model은 Anthropic Messages endpoint가 필요하므로 현재 adapter에서 거부합니다.
 
@@ -9,9 +9,9 @@ Shopport의 AI provider는 [Command Code Provider API](https://commandcode.ai/do
 필수 production 설정:
 
 ```text
-COMMAND_CODE_API_KEY=<Secrets Manager에서 주입>
-COMMAND_CODE_MODEL=gpt-5.4-mini
-COMMAND_CODE_MAX_OUTPUT_TOKENS=512
+PROVIDER_API_KEY=<Secrets Manager에서 주입>
+PROVIDER_MODEL=gpt-5.4-mini
+PROVIDER_MAX_OUTPUT_TOKENS=512
 ```
 
 모델은 `searchProducts`, `getProduct` server tool만 사용할 수 있습니다. 도구 호출은 run당 6회, model turn은 4회, 전체 run은 55초로 제한됩니다. 상품 결과는 `neutral-v1` 순서를 유지합니다.
