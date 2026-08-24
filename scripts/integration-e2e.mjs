@@ -71,7 +71,7 @@ const conversationId = created.data.createConversation.conversation.id;
 
 const preparedUpload = await graphql(
   login.accessToken,
-  "mutation Upload($input: CreateAssetUploadInput!) { createAssetUpload(input: $input) { upload { asset { id status } uploadUrl } userErrors { code message } } }",
+  "mutation Upload($input: CreateAssetUploadInput!) { createAssetUpload(input: $input) { upload { asset { id status } uploadUrl headers { name value } } userErrors { code message } } }",
   {
     input: {
       conversationId,
@@ -88,6 +88,12 @@ assert.equal(
 assert.match(
   preparedUpload.data.createAssetUpload.upload.uploadUrl,
   /shopport-assets-raw/u,
+);
+assert.deepEqual(
+  preparedUpload.data.createAssetUpload.upload.headers.find(
+    ({ name }) => name === "if-none-match",
+  ),
+  { name: "if-none-match", value: "*" },
 );
 const deletedAsset = await graphql(
   login.accessToken,

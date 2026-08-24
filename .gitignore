@@ -2,7 +2,6 @@
 .codegraph/
 .env
 .env.*
-!.env.example
 .idea/
 .local/
 .vscode/

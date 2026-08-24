@@ -6,7 +6,7 @@
 
 | 경로             | 저장소                    | 책임                                    |
 | ---------------- | ------------------------- | --------------------------------------- |
-| `shopport-fe`    | `cyjoon68/shopport-fe`    | Expo 모바일 앱, 공통 UI, Storybook, EAS |
+| `shopport-fe`    | `cyjoon68/shopport-fe`    | Expo 모바일 앱, 공통 UI, EAS            |
 | `shopport-be`    | `cyjoon68/shopport-be`    | NestJS API·worker·image Lambda          |
 | `shopport-infra` | `cyjoon68/shopport-infra` | Terraform, Helm, Argo CD, 관측          |
 
@@ -19,11 +19,14 @@ Node.js 22.13+, Corepack, Docker가 필요합니다.
 ```bash
 git submodule update --init --recursive
 corepack enable
-cp .env.example .env
+cp shopport-infra/.env.example shopport-infra/.env
+cp shopport-be/.env.example shopport-be/.env
+cp shopport-fe/.env.example shopport-fe/.env
 make dev-core
 ```
 
 `make dev-core`는 PostgreSQL, Redis, LocalStack, migration, API, worker와 Command Code AI 및 catalog provider를 실행합니다. OpenSearch까지 포함하려면 `make dev`를 사용합니다.
+환경 변수는 인프라, 백엔드, 프론트엔드 저장소별 `.env`로 분리합니다. 상위 Makefile은 로컬 Compose 실행 시 인프라와 백엔드 `.env`를 함께 읽습니다.
 
 ```bash
 make contract
@@ -31,12 +34,11 @@ KAKAO_IDENTITY_TOKEN=... KAKAO_IDENTITY_NONCE=... node scripts/integration-e2e.m
 make down
 ```
 
-모바일 앱은 별도 터미널에서 실행합니다.
+모바일 앱은 루트에서 별도 터미널로 실행합니다.
 
 ```bash
-cd shopport-fe
-pnpm install --frozen-lockfile
-pnpm start
+pnpm --dir shopport-fe install --frozen-lockfile
+pnpm --dir shopport-fe start
 ```
 
 ## 문서

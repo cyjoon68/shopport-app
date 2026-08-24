@@ -16,7 +16,7 @@
 
 ## Redis failover
 
-ElastiCache primary 승격 후 API reconnect, rate limit, 1시간 stream replay를 확인합니다. durability log 손실 시 완료 run은 Aurora ledger로 중복 저장·quota 차감을 막고 client에 새 응답 생성을 요구합니다.
+ElastiCache primary 승격 후 API reconnect, rate limit, 1시간 stream replay를 확인합니다. durability log 손실 시 완료 run은 Aurora ledger로 중복 저장을 막고 client에 새 응답 생성을 요구합니다.
 
 ## SQS redrive
 

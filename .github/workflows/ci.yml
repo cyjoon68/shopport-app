@@ -37,7 +37,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - run: ./scripts/run-integration-e2e.sh
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.20.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+          cache-dependency-path: shopport-be/pnpm-lock.yaml
+      - run: pnpm --dir shopport-be install --frozen-lockfile
+      - run: pnpm --dir shopport-be test:integration
 
   secrets:
     runs-on: ubuntu-latest
