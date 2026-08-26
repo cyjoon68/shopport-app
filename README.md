@@ -25,7 +25,7 @@ cp shopport-fe/.env.example shopport-fe/.env
 make dev-core
 ```
 
-`make dev-core`는 PostgreSQL, LocalStack, migration, API, worker와 Command Code AI 및 catalog provider를 실행합니다. OpenSearch까지 포함하려면 `make dev`를 사용합니다.
+`make dev-core`는 PostgreSQL, LocalStack, migration, API, worker, outbox dispatcher와 Command Code AI 및 catalog provider를 실행합니다. OpenSearch까지 포함하려면 `make dev`를 사용합니다.
 환경 변수는 인프라, 백엔드, 프론트엔드 저장소별 `.env`로 분리합니다. 상위 Makefile은 로컬 Compose 실행 시 인프라와 백엔드 `.env`를 함께 읽습니다.
 
 ```bash
