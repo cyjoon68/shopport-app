@@ -33,7 +33,7 @@ jobs:
       - run: pnpm --dir shopport-fe check
       - run: pnpm --dir shopport-fe test:coverage
       - run: pnpm --dir shopport-fe codegen && git -C shopport-fe diff --exit-code
-      - run: pnpm --dir shopport-fe doctor
+      - run: pnpm --dir shopport-fe run doctor
       - run: pnpm --dir shopport-fe build
       - run: pnpm --dir shopport-be check
       - run: pnpm --dir shopport-be test:coverage
