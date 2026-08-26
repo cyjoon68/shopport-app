@@ -124,24 +124,29 @@ const chat = await request("/v1/ai/chat", {
 assert.match(chat.body, /TOOL_CALL_RESULT/);
 assert.match(chat.body, /RUN_FINISHED/);
 assert.match(chat.body, /neutral-v1/);
-const streamChunks = chat.body
-  .trim()
-  .split("\n")
-  .filter(Boolean)
-  .map((line) => {
-    const value = JSON.parse(line);
-    return value.chunk ?? value;
-  });
+const parseStreamChunks = (body) =>
+  body
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => {
+      const value = JSON.parse(line);
+      return value.chunk ?? value;
+    });
+const streamChunks = parseStreamChunks(chat.body);
 const assistantMessageId = streamChunks.find(
   ({ type }) => type === "TEXT_MESSAGE_START",
 )?.messageId;
 assert.equal(typeof assistantMessageId, "string");
 assert.match(assistantMessageId, uuidV7Pattern);
 
-const replay = await request(`/v1/ai/chat?runId=${runId}&offset=0-0`, {
+const replay = await request(`/v1/ai/chat?runId=${runId}&offset=0`, {
   headers: { authorization: `Bearer ${login.accessToken}` },
 });
-assert.match(replay.body, /RUN_FINISHED/);
+const replayChunks = parseStreamChunks(replay.body);
+assert.ok(replayChunks.some(({ type }) => type === "CUSTOM"));
+assert.equal(replayChunks.some(({ type }) => type === "RUN_ERROR"), false);
+assert.equal(replayChunks.at(-1)?.type, "RUN_FINISHED");
 
 const searched = await graphql(
   login.accessToken,
