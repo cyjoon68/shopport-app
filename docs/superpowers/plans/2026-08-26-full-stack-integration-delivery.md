@@ -150,7 +150,13 @@
   pnpm test:coverage
   pnpm test:integration
   pnpm build
-  pnpm check:schema
+  (
+    set -eu
+    baseline_schema="$(mktemp)"
+    trap 'rm -f "$baseline_schema"' EXIT
+    git show origin/develop:schema.graphql > "$baseline_schema"
+    pnpm check:schema "$baseline_schema" schema.graphql
+  )
   ```
 
 - [ ] Invoke `superpowers:requesting-code-review` with the approved design, both backend plans, `develop` base SHA, feature HEAD SHA, and these explicit review questions:
@@ -222,17 +228,24 @@
   - run: pnpm --dir shopport-fe check
   - run: pnpm --dir shopport-fe test:coverage
   - run: pnpm --dir shopport-fe codegen && git -C shopport-fe diff --exit-code
-  - run: pnpm --dir shopport-fe doctor
+  - run: pnpm --dir shopport-fe run doctor
   - run: pnpm --dir shopport-fe build
   - run: pnpm --dir shopport-be check
   - run: pnpm --dir shopport-be test:coverage
   - run: pnpm --dir shopport-be build
-  - run: pnpm --dir shopport-be check:schema
+  - name: Check backend schema compatibility
+    env:
+      ROOT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+    run: |
+      backend_base_sha="$(git ls-tree "$ROOT_BASE_SHA" shopport-be | awk '{print $3}')"
+      git -C shopport-be fetch --depth=1 origin "$backend_base_sha"
+      git -C shopport-be show "${backend_base_sha}:schema.graphql" > "$RUNNER_TEMP/shopport-be-baseline-schema.graphql"
+      pnpm --dir shopport-be check:schema "$RUNNER_TEMP/shopport-be-baseline-schema.graphql" schema.graphql
   ```
 
 - [ ] Keep `integration-e2e` as the existing backend `pnpm --dir shopport-be test:integration` Testcontainers job. Rename the job display name only if needed for clarity; do not add cloud credentials or a fake device E2E command.
 
-- [ ] Keep the existing least-privilege workflow permissions and gitleaks job unchanged.
+- [ ] Keep the existing least-privilege workflow permissions and gitleaks job, and pin its CLI with `GITLEAKS_VERSION: 8.30.1` so local and CI scans use the same engine.
 
 - [ ] Validate the edited file with the available Ruby YAML parser after temporarily replacing GitHub expression scalars in memory, then inspect the workflow diff. Do not add an action-lint dependency solely for this change:
 
@@ -270,6 +283,7 @@
   check:
   ./scripts/check-submodules.sh
   node ./scripts/check-graphql-contract.mjs
+  docker run --rm -v "$(CURDIR):/repo:ro" ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f git --redact --no-banner /repo
   pnpm --dir shopport-fe check
   pnpm --dir shopport-fe test:coverage
   pnpm --dir shopport-fe codegen
@@ -277,10 +291,10 @@
   pnpm --dir shopport-be check
   pnpm --dir shopport-be test:coverage
   pnpm --dir shopport-be build
-  pnpm --dir shopport-be check:schema
+  set -eu; backend_base_sha="$$(git ls-tree origin/develop shopport-be | awk '{print $$3}')"; test -n "$$backend_base_sha"; git -C shopport-be cat-file -e "$$backend_base_sha:schema.graphql"; baseline_schema="$$(mktemp)"; trap 'rm -f "$$baseline_schema"' EXIT; git -C shopport-be show "$$backend_base_sha:schema.graphql" > "$$baseline_schema"; test -s "$$baseline_schema"; pnpm --dir shopport-be check:schema "$$baseline_schema" schema.graphql
 
   release-check: check
-  pnpm --dir shopport-fe doctor
+  pnpm --dir shopport-fe run doctor
   pnpm --dir shopport-fe build
   pnpm --dir shopport-be test:integration
   ```
@@ -417,7 +431,6 @@
   pnpm --dir shopport-be test:coverage
   pnpm --dir shopport-be test:integration
   pnpm --dir shopport-be build
-  pnpm --dir shopport-be check:schema
   make check
   git diff --check origin/develop
   git status --short --branch

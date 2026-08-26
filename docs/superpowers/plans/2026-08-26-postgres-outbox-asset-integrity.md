@@ -57,7 +57,13 @@
   pnpm check
   pnpm test
   pnpm build
-  pnpm check:schema
+  (
+    set -eu
+    baseline_schema="$(mktemp)"
+    trap 'rm -f "$baseline_schema"' EXIT
+    git show origin/develop:schema.graphql > "$baseline_schema"
+    pnpm check:schema "$baseline_schema" schema.graphql
+  )
   ```
 
 - [ ] Record the existing migration mismatch before changing it:
@@ -231,7 +237,13 @@
 - [ ] Run schema and migration checks:
 
   ```bash
-  pnpm check:schema
+  (
+    set -eu
+    baseline_schema="$(mktemp)"
+    trap 'rm -f "$baseline_schema"' EXIT
+    git show origin/develop:schema.graphql > "$baseline_schema"
+    pnpm check:schema "$baseline_schema" schema.graphql
+  )
   pnpm test:integration --runTestsByPath test/database-integrity.integration-spec.ts
   pnpm exec drizzle-kit check
   ```
@@ -560,7 +572,13 @@
   pnpm test:coverage
   pnpm test:integration
   pnpm build
-  pnpm check:schema
+  (
+    set -eu
+    baseline_schema="$(mktemp)"
+    trap 'rm -f "$baseline_schema"' EXIT
+    git show origin/develop:schema.graphql > "$baseline_schema"
+    pnpm check:schema "$baseline_schema" schema.graphql
+  )
   ```
 
 - [ ] Inspect the final migration and dependency diff:

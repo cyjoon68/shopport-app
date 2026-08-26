@@ -579,7 +579,13 @@ coverageThreshold: {
   pnpm check
   pnpm test:coverage
   pnpm build
-  pnpm check:schema
+  (
+    set -eu
+    baseline_schema="$(mktemp)"
+    trap 'rm -f "$baseline_schema"' EXIT
+    git show origin/develop:schema.graphql > "$baseline_schema"
+    pnpm check:schema "$baseline_schema" schema.graphql
+  )
   pnpm test:integration
   git status --short
   ```
