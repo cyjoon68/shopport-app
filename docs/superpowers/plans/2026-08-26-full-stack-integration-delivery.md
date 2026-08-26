@@ -84,7 +84,7 @@
   pnpm test:coverage
   pnpm codegen
   git diff --exit-code
-  pnpm doctor
+  pnpm run doctor
   pnpm build
   ```
 
@@ -220,7 +220,7 @@
 
   Expected before the edit: the command exits non-zero or reports missing commands.
 
-- [ ] Keep checkout, pinned Node/pnpm setup, frozen installs, submodule check, GraphQL contract check, and codegen diff. Add these steps to `compatibility` after installation:
+- [ ] Upgrade the workflow runtime actions to Node 24 (`actions/checkout@v7` and `pnpm/setup@v2`). Configure `pnpm/setup` with pnpm `11.20.0`, runtime `node@22.13.0`, `install: false`, and the existing lockfile cache paths so explicit frozen installs remain authoritative. Keep submodule check, GraphQL contract check, and codegen diff. Add these steps to `compatibility` after installation:
 
   ```yaml
   - run: ./scripts/check-submodules.sh
@@ -245,7 +245,7 @@
 
 - [ ] Keep `integration-e2e` as the existing backend `pnpm --dir shopport-be test:integration` Testcontainers job. Rename the job display name only if needed for clarity; do not add cloud credentials or a fake device E2E command.
 
-- [ ] Keep the existing least-privilege workflow permissions and gitleaks job, and pin its CLI with `GITLEAKS_VERSION: 8.30.1` so local and CI scans use the same engine.
+- [ ] Keep the existing least-privilege workflow permissions. Upgrade the secret scan to `gitleaks/gitleaks-action@v3` and pin its CLI with `GITLEAKS_VERSION: 8.30.1` so the action uses Node 24 and local and CI scans use the same engine.
 
 - [ ] Validate the edited file with the available Ruby YAML parser after temporarily replacing GitHub expression scalars in memory, then inspect the workflow diff. Do not add an action-lint dependency solely for this change:
 
@@ -425,7 +425,7 @@
   pnpm --dir shopport-fe test:coverage
   pnpm --dir shopport-fe codegen
   git -C shopport-fe diff --exit-code
-  pnpm --dir shopport-fe doctor
+  pnpm --dir shopport-fe run doctor
   pnpm --dir shopport-fe build
   pnpm --dir shopport-be check
   pnpm --dir shopport-be test:coverage

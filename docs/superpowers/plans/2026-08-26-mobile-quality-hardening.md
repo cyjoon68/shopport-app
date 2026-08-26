@@ -699,7 +699,7 @@ export const useProfile = (): {
   ```bash
   pnpm install --frozen-lockfile
   pnpm --filter @shopport/mobile exec expo install --check
-  pnpm doctor
+  pnpm run doctor
   pnpm build
   ```
 
@@ -754,7 +754,7 @@ coverageThreshold: {
   pnpm test:coverage
   pnpm codegen
   git diff --exit-code -- apps/mobile/src/graphql/generated
-  pnpm doctor
+  pnpm run doctor
   pnpm build
   git status --short
   ```
@@ -777,6 +777,6 @@ coverageThreshold: {
 
 ## Mobile Plan Completion Evidence
 
-- [ ] Save the exact `pnpm check`, `pnpm test:coverage`, `pnpm doctor`, and `pnpm build` summaries for the final review.
+- [ ] Save the exact `pnpm check`, `pnpm test:coverage`, `pnpm run doctor`, and `pnpm build` summaries for the final review.
 - [ ] Confirm `git status --short` is clean and `git log --oneline develop..HEAD` contains only the focused commits above.
 - [ ] Do not push or open a PR yet. Return the branch and evidence to the root execution workflow for specification and code-quality review.
