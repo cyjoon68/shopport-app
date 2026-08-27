@@ -12,16 +12,16 @@ jobs:
   compatibility:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
+          fetch-depth: 0
           submodules: recursive
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/setup@v2
         with:
           version: 11.20.0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.13.0
-          cache: pnpm
+          runtime: node@22.13.0
+          install: false
+          cache: true
           cache-dependency-path: |
             shopport-be/pnpm-lock.yaml
             shopport-fe/pnpm-lock.yaml
@@ -29,21 +29,35 @@ jobs:
       - run: pnpm --dir shopport-fe install --frozen-lockfile
       - run: ./scripts/check-submodules.sh
       - run: node ./scripts/check-graphql-contract.mjs
+      - run: pnpm --dir shopport-fe check
+      - run: pnpm --dir shopport-fe test:coverage
       - run: pnpm --dir shopport-fe codegen && git -C shopport-fe diff --exit-code
+      - run: pnpm --dir shopport-fe run doctor
+      - run: pnpm --dir shopport-fe build
+      - run: pnpm --dir shopport-be check
+      - run: pnpm --dir shopport-be test:coverage
+      - run: pnpm --dir shopport-be build
+      - name: Check backend schema compatibility
+        env:
+          ROOT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          backend_base_sha="$(git ls-tree "$ROOT_BASE_SHA" shopport-be | awk '{print $3}')"
+          git -C shopport-be fetch --depth=1 origin "$backend_base_sha"
+          git -C shopport-be show "${backend_base_sha}:schema.graphql" > "$RUNNER_TEMP/shopport-be-baseline-schema.graphql"
+          pnpm --dir shopport-be check:schema "$RUNNER_TEMP/shopport-be-baseline-schema.graphql" schema.graphql
 
   integration-e2e:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/setup@v2
         with:
           version: 11.20.0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.13.0
-          cache: pnpm
+          runtime: node@22.13.0
+          install: false
+          cache: true
           cache-dependency-path: shopport-be/pnpm-lock.yaml
       - run: pnpm --dir shopport-be install --frozen-lockfile
       - run: pnpm --dir shopport-be test:integration
@@ -51,10 +65,11 @@ jobs:
   secrets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.30.1
