@@ -87,7 +87,6 @@ jobs:
       EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY: development-maestro-key
       JWT_SECRET: maestro-test-secret-at-least-32-bytes
       MAESTRO_CLI_NO_ANALYTICS: 1
-      NODE_ENV: test
       PROVIDER_API_KEY: maestro-provider-key
     steps:
       - uses: actions/checkout@v7
