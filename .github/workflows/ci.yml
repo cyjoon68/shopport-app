@@ -62,6 +62,91 @@ jobs:
       - run: pnpm --dir shopport-be install --frozen-lockfile
       - run: pnpm --dir shopport-be test:integration
 
+  maestro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: shopport
+          POSTGRES_PASSWORD: shopport
+          POSTGRES_USER: shopport
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U shopport -d shopport"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      APP_ENV: dev
+      DATABASE_URL: postgresql://shopport:shopport@127.0.0.1:5432/shopport
+      EXPO_PUBLIC_API_URL: http://10.0.2.2:4000
+      EXPO_PUBLIC_E2E_MODE: 1
+      EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY: development-maestro-key
+      JWT_SECRET: maestro-test-secret-at-least-32-bytes
+      MAESTRO_CLI_NO_ANALYTICS: 1
+      NODE_ENV: test
+      PROVIDER_API_KEY: maestro-provider-key
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.20.0
+          runtime: node@22.13.0
+          install: false
+          cache: true
+          cache-dependency-path: |
+            shopport-be/pnpm-lock.yaml
+            shopport-fe/pnpm-lock.yaml
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - run: pnpm --dir shopport-be install --frozen-lockfile
+      - run: pnpm --dir shopport-fe install --frozen-lockfile
+      - name: Start Maestro API
+        run: |
+          pnpm --dir shopport-be db:migrate
+          pnpm --dir shopport-be start:maestro > "$RUNNER_TEMP/maestro-api.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4000/health/ready > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/maestro-api.log"
+          exit 1
+      - name: Install Maestro
+        run: |
+          curl -fsSL https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run Android Maestro flows
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_7
+          script: ./scripts/run-maestro-android.sh
+      - name: Upload Maestro artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: maestro-android
+          path: |
+            ${{ runner.temp }}/maestro-results
+            ${{ runner.temp }}/maestro-api.log
+          retention-days: 7
+
   secrets:
     runs-on: ubuntu-latest
     steps:

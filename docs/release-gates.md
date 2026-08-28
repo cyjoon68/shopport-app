@@ -19,6 +19,7 @@ CI는 다음 로컬 코드·계약 검증을 모두 통과해야 합니다.
 - Root
   - `./scripts/check-submodules.sh`
   - `node ./scripts/check-graphql-contract.mjs`
+  - Android API 34 에뮬레이터에서 고정 테스트 identity·catalog·AI 응답으로 Maestro 핵심 UX 3종
   - `make check`의 digest 고정 Gitleaks 8.30.1 컨테이너와 CI의 동일 CLI 버전으로 전체 Git 이력 secret scan
 
 ## 수동 출시 전 모바일·제품 검증
