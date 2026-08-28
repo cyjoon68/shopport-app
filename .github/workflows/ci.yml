@@ -143,7 +143,7 @@ jobs:
         with:
           name: maestro-android
           path: |
-            ${{ runner.temp }}/maestro-results
+            ${{ runner.temp }}/shopport-maestro
             ${{ runner.temp }}/maestro-api.log
           retention-days: 7
 
