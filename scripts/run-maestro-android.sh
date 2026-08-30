@@ -6,14 +6,16 @@ set -eu
 pnpm --dir shopport-fe --filter @shopport/mobile exec expo run:android --variant release --no-bundler
 adb shell pm clear com.cyjoon68.shopport
 mkdir -p "$MAESTRO_RESULTS/artifacts"
-maestro_output="$(mktemp -d .maestro-ci-artifacts.XXXXXX)"
+maestro_workspace="shopport-fe/apps/mobile/e2e"
+maestro_output="$(mktemp -d "$maestro_workspace/.maestro-ci-artifacts.XXXXXX")"
+maestro_output_name="${maestro_output##*/}"
 trap 'rm -rf -- "$maestro_output"' EXIT
 set +e
 maestro test \
   --format junit \
   --output "$MAESTRO_RESULTS/report.xml" \
-  --test-output-dir "$maestro_output" \
-  --debug-output "$maestro_output" \
+  --test-output-dir "$maestro_output_name" \
+  --debug-output "$maestro_output_name" \
   shopport-fe/apps/mobile/e2e/quick-action-composer.yaml \
   shopport-fe/apps/mobile/e2e/drawer-gesture.yaml \
   shopport-fe/apps/mobile/e2e/agent-control.yaml
