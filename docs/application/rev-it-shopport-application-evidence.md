@@ -1,9 +1,9 @@
 # 레브잇 지원용 Shopport 프로젝트 근거 문서
 
 - 대상 공고: [레브잇 Software Engineer (Frontend) (병역특례 보충역)](https://www.wanted.co.kr/wd/339807)
-- 조사·정리 기준일: 2026-08-28
+- 조사·정리 기준일: 2026-08-30
 - 프로젝트 저장소: [shopport-app](https://github.com/cyjoon68/shopport-app)
-- 기준 리비전: root `8bbc6e8`, frontend `a5c9073`, backend `a376a9d`
+- 기준 상태: frontend `develop` `b6ffc34`([PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [CI run 33317398265](https://github.com/cyjoon68/shopport-fe/actions/runs/33317398265))와 backend `develop` `7fd120f`([PR #23](https://github.com/cyjoon68/shopport-be/pull/23), [CI run 33317397700](https://github.com/cyjoon68/shopport-be/actions/runs/33317397700))에 신규 failure recovery가 병합됐다. root `feat/agent-failure-recovery`의 submodule 반영과 새 Maestro CI는 아직 PR 전이다.
 - 문서 성격: 이력서·포트폴리오·자기소개서·면접 답변을 만들 때 사용할 사실과 표현의 원본
 
 ## 1. 이 문서를 쓰는 방법
@@ -109,18 +109,19 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 #### 구현
 
-- [`new-chat-footer.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/components/composer/new-chat-footer.tsx)는 `loading` 중 보내기 아이콘을 `sf:stop.fill`로 바꾸고 접근성 이름을 `응답 중지`로 노출한다.
-- [`conversation-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/screens/chat/conversation-screen.tsx)는 실행 중 편집 요청이 오면 `cancelRunThenStop` 완료 후 composer draft를 교체한다. 여러 편집 취소 요청의 완료 순서가 바뀌어도 마지막 요청만 남긴다.
-- [`message-list-item.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/components/conversation/message-list-item.tsx)는 사용자 메시지에 native menu 기반 복사·편집 동작을 제공한다.
-- [`fetchers.ts`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/api/fetchers.ts)는 server cancel을 요청하고, 요청 결과와 관계없이 local transport를 정리한다.
-- [`ai.controller.ts`](https://github.com/cyjoon68/shopport-be/blob/a376a9d/src/modules/ai/ai.controller.ts), [`ai.repository.ts`](https://github.com/cyjoon68/shopport-be/blob/a376a9d/src/modules/ai/ai.repository.ts), [`ai-stream-lifecycle.ts`](https://github.com/cyjoon68/shopport-be/blob/a376a9d/src/modules/ai/ai-stream-lifecycle.ts)는 account·conversation·run 소유권을 확인하고 취소를 terminal state로 기록한다. provider 작업은 250ms 간격의 취소 확인으로 abort된다.
+- [`new-chat-footer.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/components/composer/new-chat-footer.tsx)는 `loading` 중 보내기 아이콘을 `sf:stop.fill`로 바꾸고 접근성 이름을 `응답 중지`로 노출한다.
+- [`conversation-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/screens/chat/conversation-screen.tsx)는 실행 중 편집 요청이 오면 `cancelRunThenStop` 완료 후 composer draft를 교체한다. 여러 편집 취소 요청의 완료 순서가 바뀌어도 마지막 요청만 남긴다.
+- 취소가 terminal state로 확정되면 `검색을 중지했어요`와 `질문 수정`·`다시 검색`을 대화 안에 남긴다. 질문 수정은 원문을 composer에 복원하고 focus하며, 다시 검색은 같은 사용자 메시지와 검색 조건을 사용하되 새 run을 만든다.
+- [`message-list-item.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/components/conversation/message-list-item.tsx)는 사용자 메시지에 native menu 기반 복사·편집 동작을 제공한다.
+- [`fetchers.ts`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/api/fetchers.ts)는 server cancel을 요청하고, 요청 결과와 관계없이 local transport를 정리한다.
+- [`ai.controller.ts`](https://github.com/cyjoon68/shopport-be/blob/7fd120f/src/modules/ai/ai.controller.ts), [`ai.repository.ts`](https://github.com/cyjoon68/shopport-be/blob/7fd120f/src/modules/ai/ai.repository.ts), [`ai-stream-lifecycle.ts`](https://github.com/cyjoon68/shopport-be/blob/7fd120f/src/modules/ai/ai-stream-lifecycle.ts)는 account·conversation·run 소유권을 확인하고 취소를 terminal state로 기록한다. provider 작업은 250ms 간격의 취소 확인으로 abort된다. 재시도에서는 완료된 동일 사용자 메시지의 account·conversation·본문·이미지가 모두 일치할 때만 새 run에 재사용해 history 중복을 막는다.
 
 #### 검증
 
 - `conversation-screen.unit.spec.tsx`: 생성 중 편집 전에 cancel 완료를 기다리는지, 비동기 취소 순서가 뒤바뀌어도 최신 편집을 보존하는지 검증한다.
 - `fetchers.integration.spec.ts`: cancel HTTP 계약과 local stop을 함께 검증한다.
-- backend integration: 다른 account의 cancel을 404로 숨기고 같은 run의 반복 취소를 멱등 처리하며, 취소된 run에 assistant message가 남지 않는지 확인한다.
-- `agent-control.yaml`: 질문 전송 → `응답 중지` → 사용자 메시지 길게 누르기 → `편집` → draft 재전송 → 다시 중지 흐름을 실제 Android UI에서 수행한다.
+- backend integration: 다른 account의 cancel을 404로 숨기고 같은 run의 반복 취소를 멱등 처리하며, 취소된 run에 assistant message가 남지 않는지 확인한다. 별도 테스트는 PostgreSQL row lock 아래에서 cancel과 complete를 실제로 경합시켜 cancel이 먼저 확정되면 completion이 lease를 잃고 assistant message를 쓰지 못하는지 검증한다.
+- `agent-control.yaml`: 질문 전송 → `응답 중지` → terminal 안내 확인 → 같은 질문 재검색 → 다시 중지 → 질문 수정 → draft 재전송 흐름을 Android UI에서 수행하도록 구성했다. root PR의 Maestro CI 통과 전에는 실행 완료 증거로 사용하지 않는다.
 
 #### 말할 수 있는 결과
 
@@ -151,10 +152,10 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 #### 구현
 
-- [`chat-quick-actions.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/components/composer/chat-quick-actions.tsx)는 판매처와 `최저가 찾기`, `추천받기`, `대체품 찾기`를 horizontal `ScrollView`의 label 형태로 제공한다.
+- [`chat-quick-actions.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/components/composer/chat-quick-actions.tsx)는 판매처와 `최저가 찾기`, `추천받기`, `대체품 찾기`를 horizontal `ScrollView`의 label 형태로 제공한다.
 - 첫 단계 label을 누르면 선택지를 bottom sheet로 열고, 고른 문장을 input에 복사한다.
-- [`new-chat-footer.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/components/composer/new-chat-footer.tsx)는 `quickActionsEnabled && inputEditable && text.trim().length === 0`일 때만 quick action을 렌더링한다.
-- [`conversation-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/screens/chat/conversation-screen.tsx)는 history loading이 끝났고 추가 질문이 없으며 대화 내용이 0개일 때만 이 기능을 허용한다.
+- [`new-chat-footer.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/components/composer/new-chat-footer.tsx)는 `quickActionsEnabled && inputEditable && text.trim().length === 0`일 때만 quick action을 렌더링한다.
+- [`conversation-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/screens/chat/conversation-screen.tsx)는 history loading이 끝났고 추가 질문이 없으며 대화 내용이 0개일 때만 이 기능을 허용한다.
 
 #### 검증
 
@@ -182,8 +183,8 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 #### 구현
 
-- [`chat-segmented-control.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/components/header/chat-segmented-control.tsx)는 tap과 horizontal pan으로 탭을 바꾸며, 선택되지 않은 탭에 새 메시지나 상품이 생기면 unread dot을 표시한다.
-- [`chat-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/screens/chat/chat-screen.tsx)는 conversation message에서 recommendation을 투영해 상품 탭에 전달한다. 두 탭을 같은 화면 tree에 유지해 전환 뒤에도 대화와 상품 상태를 보존한다.
+- [`chat-segmented-control.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/components/header/chat-segmented-control.tsx)는 tap과 horizontal pan으로 탭을 바꾸며, 선택되지 않은 탭에 새 메시지나 상품이 생기면 unread dot을 표시한다.
+- [`chat-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/screens/chat/chat-screen.tsx)는 conversation message에서 recommendation을 투영해 상품 탭에 전달한다. 두 탭을 같은 화면 tree에 유지해 전환 뒤에도 대화와 상품 상태를 보존한다.
 - 채팅 안의 상품을 선택하면 해당 상품을 focus한 채 상품 탭으로 이동한다.
 - streaming text만 바뀔 때 상품 projection이 같으면 상품 탭의 불필요한 rerender를 막는다.
 
@@ -199,7 +200,32 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 실사용에서 조건 수정 시간이 줄었는지는 아직 검증하지 않았다.
 
-### 5.4 navigation stack처럼 동작하던 메뉴를 실제 Drawer로
+### 5.4 실패·오프라인·불확실한 재고를 숨기지 않는 복구 경험
+
+#### 예상한 실패 시나리오
+
+실서비스 사용자 데이터 없이 장애 감소를 주장할 수는 없다. 대신 앱의 실제 경계에서 발생 가능한 실패를 명시하고, 실패가 생겼을 때 거짓 성공이나 맥락 손실로 이어지지 않도록 계약과 테스트를 만들었다.
+
+- 검색 중 앱이 background로 이동하거나 네트워크가 끊긴다.
+- 여러 판매처 중 한 곳만 일시적으로 실패한다.
+- 판매처 응답에 재고 값이 없거나 상품별 재고 조회가 실패한다.
+- 사용자의 취소와 AI completion이 거의 동시에 database에 도착한다.
+
+#### 구현
+
+- 앱이 inactive·background로 바뀔 때 chat persistence를 flush한다. offline 전환 시 local stream을 멈추되 저장된 resume pointer를 지우지 않고, reconnect 때 같은 conversation을 한 번 remount해 history hydrate와 stream join을 다시 수행한다.
+- offline에서 시작된 늦은 persistence write가 reconnect 뒤 도착해 새 resume pointer를 덮지 못하게 한다. offline remove도 억제한다.
+- 강제 선택된 판매처는 각각 한 번 재시도한다. 일부만 실패하면 성공한 상품은 유지하고 `unavailableProviderIds`를 AI 결과에 포함하며, 모두 실패했을 때만 안전한 오류로 종료한다. 사용자가 고르지 않은 판매처로 몰래 대체하지 않는다.
+- 재고를 `IN_STOCK`·`OUT_OF_STOCK`·`UNKNOWN`으로 분리한다. 누락·조회 실패를 품절로 단정하지 않고 `재고 확인 필요`로 보여주며, 확인 시각과 7일 이상 지난 정보의 오래됨도 함께 노출한다.
+- cancel과 complete가 경합할 때 database의 조건부 terminal transition을 단일 진실 원천으로 사용한다. cancel이 먼저 확정되면 늦은 completion은 `AI run lease lost`로 거절된다.
+
+#### 검증 가능한 결과와 한계
+
+> 네트워크 단절, 판매처 부분 실패, 불확실한 재고, cancel/complete 경합을 명시적인 상태로 모델링하고 모바일 복구 UI·GraphQL 계약·PostgreSQL 통합 테스트까지 연결했다.
+
+이 문장은 구현과 자동 검증을 설명한다. 실제 장애율, 재시도 성공률, 재고 정확도, 사용자 이탈이 개선됐다는 뜻은 아니다. provider가 반환한 `unavailableProviderIds`는 현재 AI가 응답을 정직하게 구성하기 위한 근거이며, 별도 사용자용 판매처 상태 배지까지 구현한 것은 아니다.
+
+### 5.5 navigation stack처럼 동작하던 메뉴를 실제 Drawer로
 
 #### 관찰한 문제
 
@@ -207,9 +233,9 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 #### 설계 판단과 구현
 
-- [`(drawer)/_layout.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/app/%28drawer%29/_layout.tsx)는 `expo-router/drawer`를 앱의 root navigator로 사용한다.
-- [`chat-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/screens/chat/chat-screen.tsx)는 메뉴 버튼에서 `navigation.openDrawer()`를 호출한다.
-- [`shopport-drawer-content.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/navigation/components/shopport-drawer-content.tsx)는 메뉴 이동 전 `navigation.closeDrawer()`를 호출한다. Drawer를 닫는 동작과 다른 route로 이동하는 동작을 구분한다.
+- [`(drawer)/_layout.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/app/%28drawer%29/_layout.tsx)는 `expo-router/drawer`를 앱의 root navigator로 사용한다.
+- [`chat-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/screens/chat/chat-screen.tsx)는 메뉴 버튼에서 `navigation.openDrawer()`를 호출한다.
+- [`shopport-drawer-content.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/navigation/components/shopport-drawer-content.tsx)는 메뉴 이동 전 `navigation.closeDrawer()`를 호출한다. Drawer를 닫는 동작과 다른 route로 이동하는 동작을 구분한다.
 
 #### Maestro가 검증하는 범위
 
@@ -226,7 +252,7 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 Maestro의 최종 assertion만으로 Drawer가 손가락을 따라 움직였는지, 닫힘 방향과 easing이 자연스러운지, frame drop이 없었는지 증명할 수 없다. 이 부분은 iOS 실제 기기나 시뮬레이터 화면 녹화로 보여줘야 한다. 포트폴리오에는 제스처 시작부터 닫힘까지의 영상을 별도 증거로 넣는다.
 
-### 5.5 iOS에서 익숙한 동작과 접근성 반영
+### 5.6 iOS에서 익숙한 동작과 접근성 반영
 
 #### 문제 정의
 
@@ -236,10 +262,10 @@ Maestro의 최종 assertion만으로 Drawer가 손가락을 따라 움직였는�
 
 - composer는 iOS에서 API가 제공되고 Reduce Transparency가 꺼진 경우 `expo-glass-effect`를 사용하며, 그 외 환경에는 읽을 수 있는 일반 surface를 제공한다.
 - 아이콘은 SF Symbols source를 사용하고, 전송·상품 선택 같은 주요 동작에는 iOS haptic feedback을 연결했다.
-- 사용자 메시지 작업은 [`@expo/ui`의 native `MenuView`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/components/conversation/message-list-item.tsx)를 사용한다.
+- 사용자 메시지 작업은 [`@expo/ui`의 native `MenuView`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/components/conversation/message-list-item.tsx)를 사용한다.
 - Drawer의 최근 대화에는 native `Link.Preview`와 `Link.Menu`를 연결해 고정·이름 변경·삭제를 제공한다.
 - Safe Area, 최소 44pt touch target, `allowFontScaling`, accessibility role·state·label을 주요 interaction에 적용했다.
-- [`accessibility/hooks.ts`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/shared/accessibility/hooks.ts)는 Reduce Motion과 Reduce Transparency 설정을 읽는다.
+- [`accessibility/hooks.ts`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/shared/accessibility/hooks.ts)는 Reduce Motion과 Reduce Transparency 설정을 읽는다.
 
 #### 검증과 표현 한계
 
@@ -247,12 +273,12 @@ Maestro의 최종 assertion만으로 Drawer가 손가락을 따라 움직였는�
 
 지원 서류에서는 “iOS 네이티브로 개발했다”보다 “React Native에서 iOS platform affordance와 접근성 설정을 반영했다”라고 쓴다.
 
-### 5.6 에이전트가 조건을 되묻는 구조
+### 5.7 에이전트가 조건을 되묻는 구조
 
 레브잇은 범용 답변보다 카테고리별 구매 맥락을 이해하는 AI shopping agent를 설명한다. 본 프로젝트는 조건이 부족할 때 에이전트가 구조화된 추가 질문을 보내는 `AskUser` 흐름을 구현했다.
 
-- [`ask-user-sheet.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/components/conversation/ask-user-sheet.tsx)는 추가 질문을 modal bottom sheet로 연다.
-- [`ask-user-card.tsx`](https://github.com/cyjoon68/shopport-fe/blob/a5c9073/apps/mobile/src/features/chat/components/conversation/ask-user-card.tsx)는 선택 중 중복 제출을 막고, 실패하면 다시 누를 수 있는 상태를 제공한다.
+- [`ask-user-sheet.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/components/conversation/ask-user-sheet.tsx)는 추가 질문을 modal bottom sheet로 연다.
+- [`ask-user-card.tsx`](https://github.com/cyjoon68/shopport-fe/blob/b6ffc34/apps/mobile/src/features/chat/components/conversation/ask-user-card.tsx)는 선택 중 중복 제출을 막고, 실패하면 다시 누를 수 있는 상태를 제공한다.
 - 사용자는 질문에 답하거나 sheet를 닫아 건너뛸 수 있다. free-text 허용 여부도 agent request가 정한다.
 - schema test는 option 개수, 질문 길이, free-text flag 같은 AI 출력 경계를 검증한다.
 
@@ -262,7 +288,7 @@ Maestro의 최종 assertion만으로 Drawer가 손가락을 따라 움직였는�
 
 ### 6.1 UI 변경을 backend 계약까지 연결
 
-중지 버튼만 추가하면 local stream은 멈춰도 server와 provider 작업이 계속될 수 있다. 본 프로젝트는 `threadId`와 `runId`를 cancel 계약에 포함하고, account ownership 확인, 멱등 상태 전이, provider abort까지 구현했다. 프론트엔드 문제를 network·persistence·provider lifecycle로 추적한 사례다.
+중지 버튼만 추가하면 local stream은 멈춰도 server와 provider 작업이 계속될 수 있다. 본 프로젝트는 `threadId`와 `runId`를 cancel 계약에 포함하고, account ownership 확인, 멱등 상태 전이, provider abort까지 구현했다. 취소 뒤 같은 질문을 다시 검색할 때는 사용자 메시지를 복제하지 않고 새 run만 만들도록 backend 계약도 확장했다. 프론트엔드 문제를 network·persistence·provider lifecycle로 추적한 사례다.
 
 공고 연결: 문제 정의와 아키텍처부터 출시까지 전체 사이클, React Native·GraphQL 기반 앱 개발.
 
@@ -271,7 +297,8 @@ Maestro의 최종 assertion만으로 Drawer가 손가락을 따라 움직였는�
 - `threadId`는 conversation ID, `runId`는 idempotency key로 사용한다.
 - TanStack AI transport는 reconnect를 최대 5회 시도하고 PostgreSQL stream event는 1시간 replay할 수 있다.
 - server history, live stream, SQLite message를 canonical UUID로 merge한다.
-- offline에서는 cached conversation과 draft만 허용하고 remote send queue는 만들지 않는다.
+- inactive·background에서 SQLite persistence를 flush한다. offline에서는 cached conversation과 draft만 허용하고 remote send queue는 만들지 않는다.
+- reconnect 때 저장된 resume pointer로 한 번만 다시 join하며, reconnect와 경합한 오래된 offline write가 pointer를 덮지 못하게 한다.
 - logout·account deletion 시 Apollo, SQLite, SecureStore의 사용자 상태를 정리한다.
 
 공고 연결: 사용자 경험과 안정성을 함께 고려한 frontend 환경 개선. 다만 production 장애 복구를 수행한 경험으로 확대해서는 안 된다.
@@ -295,9 +322,9 @@ CI의 세 흐름은 다음 위험을 맡는다.
 | ---------------------------- | -------------------------------------------- | ------------------------------------------------------------- |
 | `quick-action-composer.yaml` | quick action이 입력과 대화를 덮음            | 빈 input에서만 노출, 선택 후 draft 유지, 탭 전환 뒤 상태 유지 |
 | `drawer-gesture.yaml`        | swipe가 Drawer close 대신 화면 이동을 일으킴 | Drawer 종료 뒤 underlying 상품 탭 상태 유지                   |
-| `agent-control.yaml`         | AI 실행을 멈추거나 질문을 고칠 수 없음       | 실행 중지, 메시지 편집, 재전송, 재중지                        |
+| `agent-control.yaml`         | 취소 뒤 다음 행동이 없거나 대화가 중복됨      | terminal 안내, 동일 질문 재검색, 질문 수정, 재전송·재중지     |
 
-[root PR #25](https://github.com/cyjoon68/shopport-app/pull/25)의 [GitHub Actions run 33163261017](https://github.com/cyjoon68/shopport-app/actions/runs/33163261017)은 compatibility, backend integration, secret scan, Maestro job을 모두 통과했다. Maestro job은 JUnit, screenshot, hierarchy, API log를 artifact로 남긴다.
+[root PR #25](https://github.com/cyjoon68/shopport-app/pull/25)의 [GitHub Actions run 33163261017](https://github.com/cyjoon68/shopport-app/actions/runs/33163261017)은 이전 revision의 compatibility, backend integration, secret scan, Maestro 3개 흐름을 통과했다. 신규 recovery 코드는 [frontend PR #34](https://github.com/cyjoon68/shopport-fe/pull/34)와 [backend PR #23](https://github.com/cyjoon68/shopport-be/pull/23)의 CI를 통과했지만, 수정된 `agent-control.yaml`을 실행하는 root Maestro CI는 아직 남아 있다. 통과 뒤 이 문단에 root PR과 run 링크를 추가한다. Maestro job은 JUnit, screenshot, hierarchy, API log를 artifact로 남긴다.
 
 공고 연결: 자동화·최적화로 개발 생산성을 높인 경험, GitHub Actions, 빠른 변경과 회귀 방지.
 
@@ -306,6 +333,12 @@ CI의 세 흐름은 다음 위험을 맡는다.
 [`release-gates.md`](../release-gates.md)는 자동 gate와 수동 출시 검증을 나눈다. CI는 lint, typecheck, unit·integration test, coverage, GraphQL compatibility, Expo Doctor, iOS·Android export, Maestro, secret scan을 수행한다. 실제 cloud account, provider 계약, signing, 실기기, production 부하·관측 증거는 준비되지 않았다고 명시한다.
 
 공고 연결: 품질 기준을 코드와 문서로 명시한 점은 강점이다. AWS, Argo CD, Datadog, Sentry를 “운영했다”고 쓰면 과장이다. 현재는 설계·구성과 일부 local/CI 검증 경험이다.
+
+### 6.6 부분 성공과 데이터 신뢰도를 계약으로 표현
+
+두 판매처를 함께 검색할 때 한 곳이 실패해도 성공한 결과를 버리지 않는다. 각 판매처를 한 번 재시도한 뒤 실패한 ID를 `unavailableProviderIds`로 AI adapter까지 전달하고, 모든 판매처가 실패한 경우에만 요청 전체를 실패시킨다. 재고는 boolean만으로 표현하지 않고 `IN_STOCK`·`OUT_OF_STOCK`·`UNKNOWN`을 GraphQL과 저장 snapshot에 보존한다.
+
+공고 연결: commerce 데이터의 불완전성을 UI 문구, generated GraphQL type, cache migration, AI tool 결과까지 일관되게 다룬 사례다. 실제 판매처 SLA나 재고 정확도를 측정한 결과는 아니다.
 
 ## 7. 공고 요구사항 매핑
 
@@ -334,13 +367,13 @@ CI의 세 흐름은 다음 위험을 맡는다.
 | 항목             |   점수 | 근거                                                                                              |
 | ---------------- | -----: | ------------------------------------------------------------------------------------------------- |
 | 기술 스택 매칭   | 8.0/10 | React Native, TypeScript, GraphQL, GitHub Actions는 강하다. HTML·CSS, Relay는 직접 증거가 약하다. |
-| 경험 연관성      | 8.5/10 | AI shopping agent, commerce mobile UX, end-to-end cancel과 release gate가 역할과 가깝다.          |
+| 경험 연관성      | 9.0/10 | AI shopping agent, commerce mobile UX, 실패 복구·부분 성공 계약과 release gate가 역할과 가깝다.  |
 | 경력 수준 적합성 | 4.0/10 | 저장소만으로 1년 이상 경력이나 조직 협업 기간을 증명할 수 없다.                                   |
 | 공고 키워드 밀도 | 6.0/10 | 기술 문서는 충분하지만 고객 문제, 판단, 임팩트 언어가 기존 README에는 적다.                       |
 | 산업·도메인 경험 | 8.5/10 | commerce·추천·상품 탐색과 app experience가 직접 연결된다. 실제 사업 운영은 없다.                  |
 
-- 공고 방식의 가중 종합: **7.4/10, ★★★★☆**
-- 경력 기간 항목을 제외한 프로젝트 자체 적합도: **약 8.0/10**
+- 공고 방식의 가중 종합: **7.5/10, ★★★★☆**
+- 경력 기간 항목을 제외한 프로젝트 자체 적합도: **약 8.3/10**
 
 현재도 지원 자료로 사용할 수 있는 강한 프로젝트다. 점수를 가장 크게 깎는 요소는 코드 완성도가 아니라 실제 고객 검증과 경력 기간 증거의 부재다. 다른 경력에서 이 두 항목을 채울 수 있다면 프로젝트의 역할은 기술과 문제 해결 방식을 보여주는 데 집중하면 된다.
 
@@ -351,12 +384,16 @@ CI의 세 흐름은 다음 위험을 맡는다.
 - 원본 앱을 사용하며 특정 UX 현상을 관찰했다.
 - AI 실행 중지와 메시지 편집 진입을 구현했다.
 - cancel을 frontend, API, database terminal state, provider abort까지 연결했다.
+- 취소 뒤 같은 메시지를 중복 저장하지 않고 새 run으로 재검색하거나 질문을 composer에서 수정할 수 있다.
+- background·offline 상태에서 resume pointer를 보존하고 reconnect 때 같은 stream에 다시 join한다.
+- 판매처 일부 실패 시 성공 결과와 실패 판매처 ID를 함께 보존한다.
+- 재고를 구매 가능·품절·확인 필요로 구분하고 관찰 시각의 신선도를 표시한다.
 - quick action을 빈 conversation·빈 input에서만 나타나는 horizontal label로 구현했다.
 - 채팅과 상품 segmented control을 만들고 상태를 보존했다.
 - Expo Router Drawer와 swipe 종료 뒤 underlying tab 보존을 Maestro로 검증했다.
-- Android API 34 CI에서 세 Maestro flow가 통과했다.
-- iOS 시뮬레이터에서 같은 세 흐름을 수동 실행했다.
-- CI가 생성한 JUnit·screenshot·log artifact가 있다.
+- 기존 병합 revision의 Android API 34 CI에서 당시 Maestro 3개 flow가 통과했다. 이번에 수정한 terminal recovery flow의 결과는 root PR의 Maestro CI 뒤 추가한다.
+- 기존 병합 revision의 iOS 시뮬레이터에서 당시 같은 세 흐름을 수동 실행했다.
+- 기존 CI가 생성한 JUnit·screenshot·log artifact가 있다.
 
 ### 가설로만 말해야 하는 문장
 
@@ -389,6 +426,9 @@ CI의 세 흐름은 다음 위험을 맡는다.
 ### 이력서 bullet 재료
 
 - AI 검색 중 입력과 중단 경로가 사라지는 흐름을 conversation state로 재설계하고, 응답 중지·이전 질문 편집·재전송 UI를 backend의 멱등 cancel과 provider abort까지 연결
+- 취소 뒤 질문 수정·동일 질문 재검색을 terminal recovery로 제공하고, 같은 user message에 새 run만 연결하는 계약으로 대화 중복 없이 복구
+- background·offline 전환에서도 SQLite resume pointer를 보존하고 reconnect 시 stream을 1회 재join하도록 stale write 경합을 방어
+- 다중 판매처 검색을 부분 성공으로 모델링하고 실패 판매처를 AI 결과에 명시하며, 재고 미확인을 품절과 구분해 확인 시각과 함께 표시
 - 큰 Home 질문 카드를 빈 대화·빈 input에서만 노출되는 horizontal quick action으로 바꾸고, 선택 prompt를 자동 실행하지 않는 편집 가능한 draft로 제공
 - 상품 결과만 남던 탐색을 `채팅/상품` segmented control로 재구성하고, streaming 중에도 대화와 recommendation state 및 unread 상태를 보존
 - navigation history처럼 보이던 메뉴 상호작용을 Expo Router Drawer로 재구성하고, swipe close 뒤 underlying 상품 탭이 유지되는 흐름을 Maestro로 고정
@@ -458,9 +498,13 @@ local UI만 멈추면 provider 작업과 비용이 계속될 수 있고, 다른 
 
 이 작업이 끝나면 “내가 무엇을 바꿨는가”를 코드에 익숙하지 않은 채용 담당자도 바로 이해할 수 있다.
 
-### P1. 에이전트 실행 상태와 취소 후 recovery 강화
+### 완료. 취소 후 recovery와 실패 상태 모델링
 
-현재 중지 버튼은 있지만 사용자가 AI가 무엇을 하는지 알 수 있는 semantic progress가 약하다. 내부 chain-of-thought나 raw tool name을 노출하지 않고 다음 공개 상태만 제공하는 것이 좋다.
+cancel terminal 안내, 질문 수정, 동일 메시지의 새 run 재검색, background persistence, reconnect join, 판매처 부분 실패, 재고 `UNKNOWN`, cancel/complete database 경합 검증을 frontend·backend `develop`에 병합했다. 각 저장소 CI는 통과했으며 root 통합 Maestro는 아직 남아 있다. 이는 실제 사용자 임팩트가 아니라 예방적 검증이다.
+
+### P1. 사용자에게 이해되는 에이전트 진행 상태
+
+사용자가 AI가 무엇을 하는지 알 수 있는 semantic progress는 아직 약하다. 내부 chain-of-thought나 raw tool name을 노출하지 않고 다음 공개 상태만 제공하는 것이 좋다.
 
 - 요청 이해 중
 - 상품 검색 중
@@ -468,9 +512,7 @@ local UI만 멈추면 provider 작업과 비용이 계속될 수 있고, 다른 
 - 추천 정리 중
 - 사용자가 중지함
 
-취소 뒤에는 `질문 수정`, `다시 시도` action과 partial response 처리 기준을 둔다. acceptance criteria는 cancel terminal event가 UI에 남고, 재시도할 때 동일 run을 재사용하지 않으며, draft와 conversation context를 잃지 않는 것이다.
-
-이 기능은 사용자에게 에이전트의 진행 상황과 recovery path를 제공하며, 레브잇 기술 글에서 강조한 세분화된 상태·재시도 UX와도 맞는다.
+다음 acceptance criteria는 공개 progress가 실제 backend/tool phase와 일치하고, reconnect 뒤 중복되거나 역행하지 않으며, 완료·실패·취소 시 terminal 상태로 끝나는 것이다.
 
 ### P1. 측정 가능한 가설과 event contract 추가
 
