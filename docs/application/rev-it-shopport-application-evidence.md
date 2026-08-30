@@ -3,7 +3,7 @@
 - 대상 공고: [레브잇 Software Engineer (Frontend) (병역특례 보충역)](https://www.wanted.co.kr/wd/339807)
 - 조사·정리 기준일: 2026-08-31
 - 프로젝트 저장소: [shopport-app](https://github.com/cyjoon68/shopport-app)
-- 기준 상태: frontend `develop` `2e85734`([PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [후속 수정 PR #35](https://github.com/cyjoon68/shopport-fe/pull/35), [CI run 33318792125](https://github.com/cyjoon68/shopport-fe/actions/runs/33318792125))와 backend `develop` `7fd120f`([PR #23](https://github.com/cyjoon68/shopport-be/pull/23), [CI run 33317397700](https://github.com/cyjoon68/shopport-be/actions/runs/33317397700))에 failure recovery가 병합됐다. root [PR #27](https://github.com/cyjoon68/shopport-app/pull/27)은 두 submodule을 통합해 Maestro 재검증 중이다.
+- 기준 상태: frontend `develop` `4529dc5`([PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [후속 수정 PR #35](https://github.com/cyjoon68/shopport-fe/pull/35), [E2E 환경 수정 PR #36](https://github.com/cyjoon68/shopport-fe/pull/36), [CI run 33321240150](https://github.com/cyjoon68/shopport-fe/actions/runs/33321240150))와 backend `develop` `7fd120f`([PR #23](https://github.com/cyjoon68/shopport-be/pull/23), [CI run 33317397700](https://github.com/cyjoon68/shopport-be/actions/runs/33317397700))에 failure recovery가 병합됐다. root [PR #27](https://github.com/cyjoon68/shopport-app/pull/27)은 두 submodule을 통합해 Maestro 재검증 중이다.
 - 문서 성격: 이력서·포트폴리오·자기소개서·면접 답변을 만들 때 사용할 사실과 표현의 원본
 
 ## 1. 이 문서를 쓰는 방법
@@ -109,11 +109,11 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 #### 구현
 
-- [`new-chat-footer.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/components/composer/new-chat-footer.tsx)는 `loading` 중 보내기 아이콘을 `sf:stop.fill`로 바꾸고 접근성 이름을 `응답 중지`로 노출한다.
-- [`conversation-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/screens/chat/conversation-screen.tsx)는 실행 중 편집 요청이 오면 `cancelRunThenStop` 완료 후 composer draft를 교체한다. 여러 편집 취소 요청의 완료 순서가 바뀌어도 마지막 요청만 남긴다.
+- [`new-chat-footer.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/components/composer/new-chat-footer.tsx)는 `loading` 중 보내기 아이콘을 `sf:stop.fill`로 바꾸고 접근성 이름을 `응답 중지`로 노출한다.
+- [`conversation-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/screens/chat/conversation-screen.tsx)는 실행 중 편집 요청이 오면 `cancelRunThenStop` 완료 후 composer draft를 교체한다. 여러 편집 취소 요청의 완료 순서가 바뀌어도 마지막 요청만 남긴다.
 - 취소가 terminal state로 확정되면 `검색을 중지했어요`와 `질문 수정`·`다시 검색`을 대화 안에 남긴다. 질문 수정은 원문을 composer에 복원하고 focus하며, 다시 검색은 같은 사용자 메시지와 검색 조건을 사용하되 새 run을 만든다.
-- [`message-list-item.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/components/conversation/message-list-item.tsx)는 사용자 메시지에 native menu 기반 복사·편집 동작을 제공한다.
-- [`fetchers.ts`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/api/fetchers.ts)는 server cancel을 요청하고, 요청 결과와 관계없이 local transport를 정리한다.
+- [`message-list-item.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/components/conversation/message-list-item.tsx)는 사용자 메시지에 native menu 기반 복사·편집 동작을 제공한다.
+- [`fetchers.ts`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/api/fetchers.ts)는 server cancel을 요청하고, 요청 결과와 관계없이 local transport를 정리한다.
 - [`ai.controller.ts`](https://github.com/cyjoon68/shopport-be/blob/7fd120f/src/modules/ai/ai.controller.ts), [`ai.repository.ts`](https://github.com/cyjoon68/shopport-be/blob/7fd120f/src/modules/ai/ai.repository.ts), [`ai-stream-lifecycle.ts`](https://github.com/cyjoon68/shopport-be/blob/7fd120f/src/modules/ai/ai-stream-lifecycle.ts)는 account·conversation·run 소유권을 확인하고 취소를 terminal state로 기록한다. provider 작업은 250ms 간격의 취소 확인으로 abort된다. 재시도에서는 완료된 동일 사용자 메시지의 account·conversation·본문·이미지가 모두 일치할 때만 새 run에 재사용해 history 중복을 막는다.
 
 #### 검증
@@ -152,10 +152,10 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 #### 구현
 
-- [`chat-quick-actions.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/components/composer/chat-quick-actions.tsx)는 판매처와 `최저가 찾기`, `추천받기`, `대체품 찾기`를 horizontal `ScrollView`의 label 형태로 제공한다.
+- [`chat-quick-actions.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/components/composer/chat-quick-actions.tsx)는 판매처와 `최저가 찾기`, `추천받기`, `대체품 찾기`를 horizontal `ScrollView`의 label 형태로 제공한다.
 - 첫 단계 label을 누르면 선택지를 bottom sheet로 열고, 고른 문장을 input에 복사한다.
-- [`new-chat-footer.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/components/composer/new-chat-footer.tsx)는 `quickActionsEnabled && inputEditable && text.trim().length === 0`일 때만 quick action을 렌더링한다.
-- [`conversation-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/screens/chat/conversation-screen.tsx)는 history loading이 끝났고 추가 질문이 없으며 대화 내용이 0개일 때만 이 기능을 허용한다.
+- [`new-chat-footer.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/components/composer/new-chat-footer.tsx)는 `quickActionsEnabled && inputEditable && text.trim().length === 0`일 때만 quick action을 렌더링한다.
+- [`conversation-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/screens/chat/conversation-screen.tsx)는 history loading이 끝났고 추가 질문이 없으며 대화 내용이 0개일 때만 이 기능을 허용한다.
 
 #### 검증
 
@@ -183,8 +183,8 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 #### 구현
 
-- [`chat-segmented-control.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/components/header/chat-segmented-control.tsx)는 tap과 horizontal pan으로 탭을 바꾸며, 선택되지 않은 탭에 새 메시지나 상품이 생기면 unread dot을 표시한다.
-- [`chat-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/screens/chat/chat-screen.tsx)는 conversation message에서 recommendation을 투영해 상품 탭에 전달한다. 두 탭을 같은 화면 tree에 유지해 전환 뒤에도 대화와 상품 상태를 보존한다.
+- [`chat-segmented-control.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/components/header/chat-segmented-control.tsx)는 tap과 horizontal pan으로 탭을 바꾸며, 선택되지 않은 탭에 새 메시지나 상품이 생기면 unread dot을 표시한다.
+- [`chat-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/screens/chat/chat-screen.tsx)는 conversation message에서 recommendation을 투영해 상품 탭에 전달한다. 두 탭을 같은 화면 tree에 유지해 전환 뒤에도 대화와 상품 상태를 보존한다.
 - 채팅 안의 상품을 선택하면 해당 상품을 focus한 채 상품 탭으로 이동한다.
 - streaming text만 바뀔 때 상품 projection이 같으면 상품 탭의 불필요한 rerender를 막는다.
 
@@ -233,9 +233,9 @@ AI 실행을 화면 전환으로 감추지 않고 conversation 안의 상태로 
 
 #### 설계 판단과 구현
 
-- [`(drawer)/_layout.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/app/%28drawer%29/_layout.tsx)는 `expo-router/drawer`를 앱의 root navigator로 사용한다.
-- [`chat-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/screens/chat/chat-screen.tsx)는 메뉴 버튼에서 `navigation.openDrawer()`를 호출한다.
-- [`shopport-drawer-content.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/navigation/components/shopport-drawer-content.tsx)는 메뉴 이동 전 `navigation.closeDrawer()`를 호출한다. Drawer를 닫는 동작과 다른 route로 이동하는 동작을 구분한다.
+- [`(drawer)/_layout.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/app/%28drawer%29/_layout.tsx)는 `expo-router/drawer`를 앱의 root navigator로 사용한다.
+- [`chat-screen.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/screens/chat/chat-screen.tsx)는 메뉴 버튼에서 `navigation.openDrawer()`를 호출한다.
+- [`shopport-drawer-content.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/navigation/components/shopport-drawer-content.tsx)는 메뉴 이동 전 `navigation.closeDrawer()`를 호출한다. Drawer를 닫는 동작과 다른 route로 이동하는 동작을 구분한다.
 
 #### Maestro가 검증하는 범위
 
@@ -262,10 +262,10 @@ Maestro의 최종 assertion만으로 Drawer가 손가락을 따라 움직였는�
 
 - composer는 iOS에서 API가 제공되고 Reduce Transparency가 꺼진 경우 `expo-glass-effect`를 사용하며, 그 외 환경에는 읽을 수 있는 일반 surface를 제공한다.
 - 아이콘은 SF Symbols source를 사용하고, 전송·상품 선택 같은 주요 동작에는 iOS haptic feedback을 연결했다.
-- 사용자 메시지 작업은 [`@expo/ui`의 native `MenuView`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/components/conversation/message-list-item.tsx)를 사용한다.
+- 사용자 메시지 작업은 [`@expo/ui`의 native `MenuView`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/components/conversation/message-list-item.tsx)를 사용한다.
 - Drawer의 최근 대화에는 native `Link.Preview`와 `Link.Menu`를 연결해 고정·이름 변경·삭제를 제공한다.
 - Safe Area, 최소 44pt touch target, `allowFontScaling`, accessibility role·state·label을 주요 interaction에 적용했다.
-- [`accessibility/hooks.ts`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/shared/accessibility/hooks.ts)는 Reduce Motion과 Reduce Transparency 설정을 읽는다.
+- [`accessibility/hooks.ts`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/shared/accessibility/hooks.ts)는 Reduce Motion과 Reduce Transparency 설정을 읽는다.
 
 #### 검증과 표현 한계
 
@@ -277,8 +277,8 @@ Maestro의 최종 assertion만으로 Drawer가 손가락을 따라 움직였는�
 
 레브잇은 범용 답변보다 카테고리별 구매 맥락을 이해하는 AI shopping agent를 설명한다. 본 프로젝트는 조건이 부족할 때 에이전트가 구조화된 추가 질문을 보내는 `AskUser` 흐름을 구현했다.
 
-- [`ask-user-sheet.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/components/conversation/ask-user-sheet.tsx)는 추가 질문을 modal bottom sheet로 연다.
-- [`ask-user-card.tsx`](https://github.com/cyjoon68/shopport-fe/blob/2e85734/apps/mobile/src/features/chat/components/conversation/ask-user-card.tsx)는 선택 중 중복 제출을 막고, 실패하면 다시 누를 수 있는 상태를 제공한다.
+- [`ask-user-sheet.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/components/conversation/ask-user-sheet.tsx)는 추가 질문을 modal bottom sheet로 연다.
+- [`ask-user-card.tsx`](https://github.com/cyjoon68/shopport-fe/blob/4529dc5/apps/mobile/src/features/chat/components/conversation/ask-user-card.tsx)는 선택 중 중복 제출을 막고, 실패하면 다시 누를 수 있는 상태를 제공한다.
 - 사용자는 질문에 답하거나 sheet를 닫아 건너뛸 수 있다. free-text 허용 여부도 agent request가 정한다.
 - schema test는 option 개수, 질문 길이, free-text flag 같은 AI 출력 경계를 검증한다.
 
@@ -324,7 +324,7 @@ CI의 세 흐름은 다음 위험을 맡는다.
 | `drawer-gesture.yaml`        | swipe가 Drawer close 대신 화면 이동을 일으킴 | Drawer 종료 뒤 underlying 상품 탭 상태 유지                   |
 | `agent-control.yaml`         | 취소 뒤 다음 행동이 없거나 대화가 중복됨      | terminal 안내, 동일 질문 재검색, 질문 수정, 재전송·재중지     |
 
-[root PR #25](https://github.com/cyjoon68/shopport-app/pull/25)의 [GitHub Actions run 33163261017](https://github.com/cyjoon68/shopport-app/actions/runs/33163261017)은 이전 revision의 compatibility, backend integration, secret scan, Maestro 3개 흐름을 통과했다. 신규 recovery 코드의 [frontend PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [backend PR #23](https://github.com/cyjoon68/shopport-be/pull/23)와 후속 경합 수정 [frontend PR #35](https://github.com/cyjoon68/shopport-fe/pull/35)도 각 저장소 CI를 통과했다. 통합 [root PR #27](https://github.com/cyjoon68/shopport-app/pull/27)의 [첫 run 33317692606](https://github.com/cyjoon68/shopport-app/actions/runs/33317692606)은 compatibility, backend integration, secret scan을 통과했지만 `agent-control.yaml`에서 실패했다. 이 실패로 이전 재검색 요청이 늦게 끝날 때 새 취소 recovery를 비활성화하는 경합을 찾아 수정했으며, root Maestro 재실행 결과는 아직 남아 있다. 통과 뒤 이 문단에 최종 run 링크를 추가한다.
+[root PR #25](https://github.com/cyjoon68/shopport-app/pull/25)의 [GitHub Actions run 33163261017](https://github.com/cyjoon68/shopport-app/actions/runs/33163261017)은 이전 revision의 compatibility, backend integration, secret scan, Maestro 3개 흐름을 통과했다. 신규 recovery 코드의 [frontend PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [backend PR #23](https://github.com/cyjoon68/shopport-be/pull/23), 후속 경합 수정 [frontend PR #35](https://github.com/cyjoon68/shopport-fe/pull/35), E2E 환경 수정 [frontend PR #36](https://github.com/cyjoon68/shopport-fe/pull/36)도 각 저장소 CI를 통과했다. 통합 [root PR #27](https://github.com/cyjoon68/shopport-app/pull/27)의 [첫 run 33317692606](https://github.com/cyjoon68/shopport-app/actions/runs/33317692606)은 `agent-control.yaml`의 마지막 assertion에서 실패했다. 별도 unit 재현으로 이전 재검색의 늦은 완료가 새 취소 recovery를 비활성화하는 제품 경합을 찾아 PR #35에서 수정했다. 이후 진단 artifact를 확보한 [run 33320550872](https://github.com/cyjoon68/shopport-app/actions/runs/33320550872)에서는 `질문 수정`이 input을 focus할 때 AOSP 키보드의 연락처 권한 팝업이 전송 버튼을 가린 테스트 환경 원인을 확인해 PR #36에서 선택적으로 처리했다. root Maestro 최종 재실행 결과는 아직 남아 있다.
 
 공고 연결: 자동화·최적화로 개발 생산성을 높인 경험, GitHub Actions, 빠른 변경과 회귀 방지.
 
@@ -391,7 +391,7 @@ CI의 세 흐름은 다음 위험을 맡는다.
 - quick action을 빈 conversation·빈 input에서만 나타나는 horizontal label로 구현했다.
 - 채팅과 상품 segmented control을 만들고 상태를 보존했다.
 - Expo Router Drawer와 swipe 종료 뒤 underlying tab 보존을 Maestro로 검증했다.
-- 기존 병합 revision의 Android API 34 CI에서 당시 Maestro 3개 flow가 통과했다. terminal recovery의 재시도·재취소 경합 수정은 frontend PR #35에 병합됐고 root PR #27의 Maestro 재검증은 남아 있다.
+- 기존 병합 revision의 Android API 34 CI에서 당시 Maestro 3개 flow가 통과했다. terminal recovery의 재시도·재취소 경합 수정은 frontend PR #35에, AOSP 키보드 권한 팝업 처리는 PR #36에 병합됐고 root PR #27의 최종 Maestro 재검증은 남아 있다.
 - 기존 병합 revision의 iOS 시뮬레이터에서 당시 같은 세 흐름을 수동 실행했다.
 - 기존 CI가 생성한 JUnit·screenshot·log artifact가 있다.
 
@@ -500,7 +500,7 @@ local UI만 멈추면 provider 작업과 비용이 계속될 수 있고, 다른 
 
 ### 완료. 취소 후 recovery와 실패 상태 모델링
 
-cancel terminal 안내, 질문 수정, 동일 메시지의 새 run 재검색, background persistence, reconnect join, 판매처 부분 실패, 재고 `UNKNOWN`, cancel/complete database 경합 검증을 frontend·backend `develop`에 병합했다. 재시도 도중 다시 취소했을 때 recovery action이 잠기는 경합도 frontend PR #35에서 수정했다. 각 저장소 CI는 통과했으며 root PR #27의 통합 Maestro 재검증은 남아 있다. 이는 실제 사용자 임팩트가 아니라 예방적 검증이다.
+cancel terminal 안내, 질문 수정, 동일 메시지의 새 run 재검색, background persistence, reconnect join, 판매처 부분 실패, 재고 `UNKNOWN`, cancel/complete database 경합 검증을 frontend·backend `develop`에 병합했다. 재시도 도중 다시 취소했을 때 recovery action이 잠기는 경합도 frontend PR #35에서 수정했고, Android CI의 키보드 시스템 팝업은 PR #36에서 처리했다. 각 저장소 CI는 통과했으며 root PR #27의 통합 Maestro 최종 재검증은 남아 있다. 이는 실제 사용자 임팩트가 아니라 예방적 검증이다.
 
 ### P1. 사용자에게 이해되는 에이전트 진행 상태
 
@@ -601,8 +601,10 @@ cancel terminal 안내, 질문 수정, 동일 메시지의 새 run 재검색, ba
 - [Maestro CI PR #25](https://github.com/cyjoon68/shopport-app/pull/25)
 - [failure recovery frontend PR #34](https://github.com/cyjoon68/shopport-fe/pull/34)
 - [retry recovery race fix frontend PR #35](https://github.com/cyjoon68/shopport-fe/pull/35)
+- [Maestro keyboard permission handling frontend PR #36](https://github.com/cyjoon68/shopport-fe/pull/36)
 - [failure recovery backend PR #23](https://github.com/cyjoon68/shopport-be/pull/23)
 - [failure recovery integration root PR #27](https://github.com/cyjoon68/shopport-app/pull/27)
+- [Maestro failure diagnostic run 33320550872](https://github.com/cyjoon68/shopport-app/actions/runs/33320550872)
 - [검증 완료 GitHub Actions run](https://github.com/cyjoon68/shopport-app/actions/runs/33163261017)
 
 ### 원본 관찰 자료
