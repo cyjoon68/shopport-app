@@ -3,7 +3,7 @@
 - 대상 공고: [레브잇 Software Engineer (Frontend) (병역특례 보충역)](https://www.wanted.co.kr/wd/339807)
 - 조사·정리 기준일: 2026-08-31
 - 프로젝트 저장소: [shopport-app](https://github.com/cyjoon68/shopport-app)
-- 기준 상태: frontend `develop` `1b4386a`([PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [후속 수정 PR #35](https://github.com/cyjoon68/shopport-fe/pull/35), [E2E 진단 PR #36](https://github.com/cyjoon68/shopport-fe/pull/36), [최종 E2E 수정 PR #37](https://github.com/cyjoon68/shopport-fe/pull/37), [CI run 33322201823](https://github.com/cyjoon68/shopport-fe/actions/runs/33322201823))와 backend `develop` `7fd120f`([PR #23](https://github.com/cyjoon68/shopport-be/pull/23), [CI run 33317397700](https://github.com/cyjoon68/shopport-be/actions/runs/33317397700))에 failure recovery가 병합됐다. root [PR #27](https://github.com/cyjoon68/shopport-app/pull/27)은 두 submodule을 통합해 Maestro 재검증 중이다.
+- 기준 상태: frontend `develop` `1b4386a`([PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [후속 수정 PR #35](https://github.com/cyjoon68/shopport-fe/pull/35), [E2E 진단 PR #36](https://github.com/cyjoon68/shopport-fe/pull/36), [최종 E2E 수정 PR #37](https://github.com/cyjoon68/shopport-fe/pull/37), [CI run 33322201823](https://github.com/cyjoon68/shopport-fe/actions/runs/33322201823))와 backend `develop` `7fd120f`([PR #23](https://github.com/cyjoon68/shopport-be/pull/23), [CI run 33317397700](https://github.com/cyjoon68/shopport-be/actions/runs/33317397700))에 failure recovery가 병합됐다. 두 submodule을 통합한 root [PR #27](https://github.com/cyjoon68/shopport-app/pull/27)은 [CI run 33322423596](https://github.com/cyjoon68/shopport-app/actions/runs/33322423596)에서 compatibility, backend integration, secret scan과 Maestro 3개 흐름을 통과했다.
 - 문서 성격: 이력서·포트폴리오·자기소개서·면접 답변을 만들 때 사용할 사실과 표현의 원본
 
 ## 1. 이 문서를 쓰는 방법
@@ -324,7 +324,7 @@ CI의 세 흐름은 다음 위험을 맡는다.
 | `drawer-gesture.yaml`        | swipe가 Drawer close 대신 화면 이동을 일으킴 | Drawer 종료 뒤 underlying 상품 탭 상태 유지                   |
 | `agent-control.yaml`         | 취소 뒤 다음 행동이 없거나 대화가 중복됨      | terminal 안내, 동일 질문 재검색, 질문 수정, 재전송·재중지     |
 
-[root PR #25](https://github.com/cyjoon68/shopport-app/pull/25)의 [GitHub Actions run 33163261017](https://github.com/cyjoon68/shopport-app/actions/runs/33163261017)은 이전 revision의 compatibility, backend integration, secret scan, Maestro 3개 흐름을 통과했다. 신규 recovery 코드의 [frontend PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [backend PR #23](https://github.com/cyjoon68/shopport-be/pull/23), 후속 경합 수정 [frontend PR #35](https://github.com/cyjoon68/shopport-fe/pull/35), E2E 진단·수정 [frontend PR #36](https://github.com/cyjoon68/shopport-fe/pull/36)·[#37](https://github.com/cyjoon68/shopport-fe/pull/37)도 각 저장소 CI를 통과했다. 통합 [root PR #27](https://github.com/cyjoon68/shopport-app/pull/27)의 [첫 run 33317692606](https://github.com/cyjoon68/shopport-app/actions/runs/33317692606)은 `agent-control.yaml`의 마지막 assertion에서 실패했다. 별도 unit 재현으로 이전 재검색의 늦은 완료가 새 취소 recovery를 비활성화하는 제품 경합을 찾아 PR #35에서 수정했다. 진단 artifact를 확보한 [run 33320550872](https://github.com/cyjoon68/shopport-app/actions/runs/33320550872)와 [run 33321489132](https://github.com/cyjoon68/shopport-app/actions/runs/33321489132)에서는 input focus 뒤 키보드가 composer 버튼을 덮어, accessibility tree에는 남은 전송 버튼 좌표가 AOSP 연락처 제안 영역을 누르는 테스트 환경 원인을 확인했다. PR #37은 재전송 assertion과 탭 전에 키보드를 닫아 실제로 보이는 composer를 검증한다. root Maestro 최종 재실행 결과는 아직 남아 있다.
+[root PR #25](https://github.com/cyjoon68/shopport-app/pull/25)의 [GitHub Actions run 33163261017](https://github.com/cyjoon68/shopport-app/actions/runs/33163261017)은 이전 revision의 compatibility, backend integration, secret scan, Maestro 3개 흐름을 통과했다. 신규 recovery 코드의 [frontend PR #34](https://github.com/cyjoon68/shopport-fe/pull/34), [backend PR #23](https://github.com/cyjoon68/shopport-be/pull/23), 후속 경합 수정 [frontend PR #35](https://github.com/cyjoon68/shopport-fe/pull/35), E2E 진단·수정 [frontend PR #36](https://github.com/cyjoon68/shopport-fe/pull/36)·[#37](https://github.com/cyjoon68/shopport-fe/pull/37)도 각 저장소 CI를 통과했다. 통합 [root PR #27](https://github.com/cyjoon68/shopport-app/pull/27)의 [첫 run 33317692606](https://github.com/cyjoon68/shopport-app/actions/runs/33317692606)은 `agent-control.yaml`의 마지막 assertion에서 실패했다. 별도 unit 재현으로 이전 재검색의 늦은 완료가 새 취소 recovery를 비활성화하는 제품 경합을 찾아 PR #35에서 수정했다. 진단 artifact를 확보한 [run 33320550872](https://github.com/cyjoon68/shopport-app/actions/runs/33320550872)와 [run 33321489132](https://github.com/cyjoon68/shopport-app/actions/runs/33321489132)에서는 input focus 뒤 키보드가 composer 버튼을 덮어, accessibility tree에는 남은 전송 버튼 좌표가 AOSP 연락처 제안 영역을 누르는 테스트 환경 원인을 확인했다. PR #37은 재전송 assertion과 탭 전에 키보드를 닫아 실제로 보이는 composer를 검증한다. 이후 [run 33322423596](https://github.com/cyjoon68/shopport-app/actions/runs/33322423596)은 네 개 CI job을 모두 통과했고, JUnit artifact에서 세 Maestro flow가 `3 tests, 0 failures`로 기록됐다.
 
 공고 연결: 자동화·최적화로 개발 생산성을 높인 경험, GitHub Actions, 빠른 변경과 회귀 방지.
 
@@ -391,7 +391,7 @@ CI의 세 흐름은 다음 위험을 맡는다.
 - quick action을 빈 conversation·빈 input에서만 나타나는 horizontal label로 구현했다.
 - 채팅과 상품 segmented control을 만들고 상태를 보존했다.
 - Expo Router Drawer와 swipe 종료 뒤 underlying tab 보존을 Maestro로 검증했다.
-- 기존 병합 revision의 Android API 34 CI에서 당시 Maestro 3개 flow가 통과했다. terminal recovery의 재시도·재취소 경합 수정은 frontend PR #35에, 키보드로 가려진 composer 처리 수정은 PR #37에 병합됐고 root PR #27의 최종 Maestro 재검증은 남아 있다.
+- Android API 34 CI에서 terminal recovery의 재시도·재취소 경합 수정과 키보드에 가려진 composer 처리까지 포함한 Maestro 3개 flow가 통과했다.
 - 기존 병합 revision의 iOS 시뮬레이터에서 당시 같은 세 흐름을 수동 실행했다.
 - 기존 CI가 생성한 JUnit·screenshot·log artifact가 있다.
 
@@ -500,7 +500,7 @@ local UI만 멈추면 provider 작업과 비용이 계속될 수 있고, 다른 
 
 ### 완료. 취소 후 recovery와 실패 상태 모델링
 
-cancel terminal 안내, 질문 수정, 동일 메시지의 새 run 재검색, background persistence, reconnect join, 판매처 부분 실패, 재고 `UNKNOWN`, cancel/complete database 경합 검증을 frontend·backend `develop`에 병합했다. 재시도 도중 다시 취소했을 때 recovery action이 잠기는 경합도 frontend PR #35에서 수정했고, Android CI에서는 키보드를 닫아 실제로 노출된 composer를 탭하도록 PR #37에서 수정했다. 각 저장소 CI는 통과했으며 root PR #27의 통합 Maestro 최종 재검증은 남아 있다. 이는 실제 사용자 임팩트가 아니라 예방적 검증이다.
+cancel terminal 안내, 질문 수정, 동일 메시지의 새 run 재검색, background persistence, reconnect join, 판매처 부분 실패, 재고 `UNKNOWN`, cancel/complete database 경합 검증을 frontend·backend `develop`에 병합했다. 재시도 도중 다시 취소했을 때 recovery action이 잠기는 경합도 frontend PR #35에서 수정했고, Android CI에서는 키보드를 닫아 실제로 노출된 composer를 탭하도록 PR #37에서 수정했다. 각 저장소 CI와 root PR #27의 통합 CI가 통과했으며, Maestro JUnit 결과는 3개 flow, 0 failures다. 이는 실제 사용자 임팩트가 아니라 예방적 자동 검증이다.
 
 ### P1. 사용자에게 이해되는 에이전트 진행 상태
 
@@ -607,6 +607,7 @@ cancel terminal 안내, 질문 수정, 동일 메시지의 새 run 재검색, ba
 - [failure recovery integration root PR #27](https://github.com/cyjoon68/shopport-app/pull/27)
 - [Maestro failure diagnostic run 33320550872](https://github.com/cyjoon68/shopport-app/actions/runs/33320550872)
 - [Maestro obscured-composer diagnostic run 33321489132](https://github.com/cyjoon68/shopport-app/actions/runs/33321489132)
+- [failure recovery 통합 검증 run 33322423596](https://github.com/cyjoon68/shopport-app/actions/runs/33322423596)
 - [검증 완료 GitHub Actions run](https://github.com/cyjoon68/shopport-app/actions/runs/33163261017)
 
 ### 원본 관찰 자료
