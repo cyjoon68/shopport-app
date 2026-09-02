@@ -17,6 +17,42 @@ Shopport는 카카오 로그인 후 대화로 상품을 찾고 비교할 수 있
 
 승인 문서, credential, 보존·이미지 권한이 확인되지 않은 provider는 등록하거나 production UI에 노출하지 않습니다.
 
+## 모바일 UX 설계
+
+AI 쇼핑 에이전트의 탐색 과정을 사용자가 이해하고 제어할 수 있도록 대화와 상품 경험을 하나의 흐름으로 설계했습니다. 구현 의도와 화면별 근거는 [모바일 UX 설계 Wiki](https://github.com/cyjoon68/shopport-app/wiki/UX-Design)에서 확인할 수 있습니다.
+
+### 1. Quick Action으로 첫 질문 시작
+
+빈 대화·빈 입력 상태에 가로형 Quick Action을 배치하여 입력창 중심으로 첫 질문을 시작할 수 있도록 구성
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wiki/cyjoon68/shopport-app/images/ux/01-quick-action-home.png" alt="Quick Action이 배치된 홈 화면" width="320">
+</p>
+
+### 2. 대화와 상품 결과 전환
+
+채팅·상품 Segmented Control과 화면 상태 보존을 적용하여 요청 내용과 상품 결과를 자유롭게 오갈 수 있도록 설계
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wiki/cyjoon68/shopport-app/images/ux/03-product-results.png" alt="탐색 완료 후 상품 탭 화면" width="320">
+</p>
+
+### 3. AI 탐색 중 실행 제어
+
+AI 탐색 중에도 실행을 중지할 수 있고, 취소·실패 후에는 같은 질문으로 다시 탐색하거나 질문을 수정해 이어갈 수 있도록 설계
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wiki/cyjoon68/shopport-app/images/ux/02-ai-search-in-progress.png" alt="AI 탐색 중 응답 중지 화면" width="320">
+</p>
+
+### 4. 작업 맥락을 유지하는 Drawer
+
+Drawer를 overlay navigation으로 구성하여 swipe 종료 후에도 현재 탭과 작업 맥락을 유지
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wiki/cyjoon68/shopport-app/images/ux/04-drawer-open.png" alt="Overlay Drawer 화면" width="320">
+</p>
+
 ## 구성
 
 ```mermaid
