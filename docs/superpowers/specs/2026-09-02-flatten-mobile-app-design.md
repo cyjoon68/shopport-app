@@ -59,7 +59,7 @@ theme token은 현재 `src/theme/unistyles.ts` 한 곳에서만 소비되므로 
 
 루트 package 이름은 기존 `shopport-fe`를 유지하고 모바일 dependency와 script를 직접 둔다. `pnpm --filter @shopport/mobile` proxy는 제거하고 `start`, `build`, `test`, `codegen`, `doctor`, `typecheck`가 루트 앱을 바로 실행하도록 한다. dependency 감사 test는 기존 `test`와 `test:coverage` 뒤에 계속 실행한다.
 
-루트 `tsconfig.json`은 기존 base와 React Native compiler option을 합치고 `@/* -> ./src/*` alias 및 현재 include 범위를 유지한다. project reference와 `@shopport/typescript-config`는 제거한다.
+루트 `tsconfig.json`은 기존 base와 React Native compiler option을 합치고 `@/* -> ./src/*` alias 및 현재 include 범위를 유지한다. project reference, project reference에만 필요했던 `composite`, `@shopport/typescript-config`는 제거한다.
 
 루트 `.gitignore`와 `.prettierignore`에는 모바일 저장소의 ignore 규칙을 합치고 옛 `apps/mobile` 경로를 루트 `ios`, `android` 경로로 바꾼다. 로컬 CNG native directory가 있으면 루트로 옮겨 사용자 상태를 보존하고 `.expo`, build output, log 같은 재생성 가능한 cache만 옛 경로에서 제거한다.
 
