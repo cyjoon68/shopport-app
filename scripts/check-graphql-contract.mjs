@@ -12,12 +12,12 @@ const { buildSchema, parse, stripIgnoredCharacters, validate } =
 const root = new URL("..", import.meta.url);
 const backendSchemaUrl = new URL("shopport-be/schema.graphql", root);
 const frontendSchemaUrl = new URL(
-  "shopport-fe/apps/mobile/schema.graphql",
+  "shopport-fe/schema.graphql",
   root,
 );
-const operationsRoot = new URL("shopport-fe/apps/mobile/src/graphql/", root);
+const operationsRoot = new URL("shopport-fe/src/graphql/", root);
 const persistedOperationsUrl = new URL(
-  "shopport-fe/apps/mobile/src/graphql/generated/persisted-documents.json",
+  "shopport-fe/src/graphql/generated/persisted-documents.json",
   root,
 );
 
@@ -39,7 +39,7 @@ const backend = normalize(await readFile(backendSchemaUrl, "utf8"));
 const frontend = normalize(await readFile(frontendSchemaUrl, "utf8"));
 if (backend !== frontend) {
   throw new Error(
-    "GraphQL schema snapshot differs; copy shopport-be/schema.graphql to shopport-fe/apps/mobile/schema.graphql and run codegen",
+    "GraphQL schema snapshot differs; copy shopport-be/schema.graphql to shopport-fe/schema.graphql and run codegen",
   );
 }
 
