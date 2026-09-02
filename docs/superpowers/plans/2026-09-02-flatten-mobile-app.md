@@ -437,11 +437,10 @@ pnpm --dir shopport-fe install
 pnpm --dir shopport-fe typecheck
 pnpm --dir shopport-fe test:unit
 test ! -d shopport-fe/packages
-test ! -d shopport-fe/apps
 ! rg -n '@shopport/(tokens|ui|typescript-config)|workspace:\*' shopport-fe/package.json shopport-fe/tsconfig.json shopport-fe/src shopport-fe/pnpm-lock.yaml
 ```
 
-Expected: all commands exit 0 and the final search produces no matches.
+Expected: all commands exit 0 and the final search produces no matches. Task 3 removes ignored cache residue before asserting that `shopport-fe/apps` is absent.
 
 - [ ] **Step 8: Commit package removal**
 
