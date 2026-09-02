@@ -8,11 +8,11 @@ Shopport는 카카오 로그인 후 대화로 상품을 찾고 비교할 수 있
 
 ## 핵심 경험
 
-| 영역 | 제공 범위 |
-| --- | --- |
-| 대화형 탐색 | 대화에서 상품을 찾고 결과를 비교합니다. |
-| 이미지 처리 | 업로드 이미지를 정규화한 뒤 비동기 처리합니다. |
-| 개인화 | 대화 기록, 찜, 입력 초안을 기기와 서버의 역할에 맞게 보관합니다. |
+| 영역        | 제공 범위                                                          |
+| ----------- | ------------------------------------------------------------------ |
+| 대화형 탐색 | 대화에서 상품을 찾고 결과를 비교합니다.                            |
+| 이미지 처리 | 업로드 이미지를 정규화한 뒤 비동기 처리합니다.                     |
+| 개인화      | 대화 기록, 찜, 입력 초안을 기기와 서버의 역할에 맞게 보관합니다.   |
 | 안전한 연동 | 승인된 catalog API와 ZDR 경로를 지원하는 AI provider만 사용합니다. |
 
 승인 문서, credential, 보존·이미지 권한이 확인되지 않은 provider는 등록하거나 production UI에 노출하지 않습니다.
@@ -70,11 +70,11 @@ AI provider와 Kakao identity credential이 준비된 경우에만 통합 E2E를
 
 ## 저장소 구성
 
-| 경로 | 역할 |
-| --- | --- |
-| [shopport-fe](shopport-fe/README.md) | Expo 모바일 앱, 공통 UI·토큰, EAS 설정 |
-| [shopport-be](shopport-be/README.md) | NestJS GraphQL API, worker, image Lambda |
-| [shopport-infra](shopport-infra/README.md) | Terraform, Helm, Argo CD, 관측 설정 |
+| 경로                                       | 역할                                     |
+| ------------------------------------------ | ---------------------------------------- |
+| [shopport-fe](shopport-fe/README.md)       | Expo 모바일 앱, 공통 UI·토큰, EAS 설정   |
+| [shopport-be](shopport-be/README.md)       | NestJS GraphQL API, worker, image Lambda |
+| [shopport-infra](shopport-infra/README.md) | Terraform, Helm, Argo CD, 관측 설정      |
 
 세 경로는 Git submodule입니다. 루트 커밋과 태그는 호환이 검증된 세 SHA를 고정하는 출시 BOM입니다.
 
@@ -87,12 +87,6 @@ AI provider와 Kakao identity credential이 준비된 경우에만 통합 E2E를
 - [개인정보·데이터 수명주기](docs/privacy-lifecycle.md)
 - [운영 runbook](docs/runbooks.md)
 - [테스트·출시 게이트](docs/release-gates.md)
-
-## 품질과 출시
-
-`make check`는 submodule SHA, GraphQL 계약, secret scan, FE·BE 검사와 build를 함께 확인합니다. `make release-check`는 모바일 doctor·export와 백엔드 통합 검증까지 포함합니다.
-
-AWS account와 DNS, Kakao·EAS·Datadog·Sentry·AI provider credential, 승인된 provider 계약은 저장소 밖의 입력입니다. 준비 전에는 cloud 배포나 production provider 사용을 완료된 상태로 취급하지 않습니다.
 
 ## 라이선스
 
