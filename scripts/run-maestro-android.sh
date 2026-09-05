@@ -66,7 +66,7 @@ wait_for_app() {
   output="$MAESTRO_RESULTS/bootstrap-hierarchy.txt"
   for attempt in $(seq 1 120); do
     if maestro hierarchy 2>/dev/null | sanitize_text > "$output" &&
-      grep -Eq '카카오로 시작하기|메뉴 열기' "$output"; then
+      grep -Eq 'Continue|카카오로 시작하기|메뉴 열기' "$output"; then
       return
     fi
     sleep 1
