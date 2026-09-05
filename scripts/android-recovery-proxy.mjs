@@ -239,7 +239,7 @@ const forward = (request, response, observe) => {
   let prefix = "";
   request.on("data", (chunk) => {
     if (!state.threadId) {
-      prefix = `${prefix}${String(chunk)}`.slice(-256);
+      prefix = `${prefix}${String(chunk)}`.slice(0, 4_096);
       const match = prefix.match(/"threadId"\s*:\s*"([^"]+)"/u);
       if (match?.[1] && uuidPattern.test(match[1])) {
         state.threadId = match[1];

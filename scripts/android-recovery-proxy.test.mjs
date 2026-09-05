@@ -93,7 +93,7 @@ const postAi = (baseUrl, headers) => {
   request.end(
     JSON.stringify({
       threadId,
-      private: "never-record-this-user-text",
+      private: "never-record-this-user-text".repeat(64),
     }),
   );
   return request;
