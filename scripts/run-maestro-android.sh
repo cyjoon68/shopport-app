@@ -62,6 +62,18 @@ wait_for_metro() {
   return 1
 }
 
+wait_for_app() {
+  output="$MAESTRO_RESULTS/bootstrap-hierarchy.txt"
+  for attempt in $(seq 1 120); do
+    if maestro hierarchy 2>/dev/null | sanitize_text > "$output" &&
+      grep -Eq '카카오로 시작하기|메뉴 열기' "$output"; then
+      return
+    fi
+    sleep 1
+  done
+  return 1
+}
+
 wait_for_proxy() {
   condition=$1
   output=$2
@@ -440,6 +452,7 @@ wait_for_metro
 adb reverse tcp:8081 tcp:8081
 adb reverse tcp:4566 tcp:4566
 pnpm --dir shopport-fe exec expo run:android --variant debug --no-bundler
+wait_for_app
 adb shell run-as "$app_id" id > "$MAESTRO_RESULTS/run-as.txt"
 api_level=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 abi=$(adb shell getprop ro.product.cpu.abi | tr -d '\r')
