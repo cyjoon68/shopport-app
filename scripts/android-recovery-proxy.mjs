@@ -11,6 +11,7 @@ const controlPrefix = "/__recovery__/";
 const chatPath = "/v1/ai/chat";
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const runIdPattern = /^[^\r\n]{1,200}$/u;
 const hopHeaders = new Set([
   "connection",
   "content-length",
@@ -297,7 +298,7 @@ const handleScenarioRequest = (request, response) => {
     typeof headerRunId === "string" &&
     lastEventId === undefined
   ) {
-    if (!uuidPattern.test(headerRunId)) {
+    if (!runIdPattern.test(headerRunId)) {
       state.phase = "failed";
       record("invalid-initial-run");
       request.resume();

@@ -67,6 +67,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     services:
+      localstack:
+        image: localstack/localstack:4.3.0
+        env:
+          AWS_DEFAULT_REGION: ap-northeast-2
+          SERVICES: s3
+        ports:
+          - 4566:4566
+        options: >-
+          --health-cmd "curl --fail --silent http://localhost:4566/_localstack/health >/dev/null"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 30
       postgres:
         image: postgres:17-alpine
         env:
@@ -82,6 +94,11 @@ jobs:
           --health-retries 10
     env:
       APP_ENV: dev
+      ASSET_BUCKET: shopport-assets-raw
+      AWS_ACCESS_KEY_ID: test
+      AWS_ENDPOINT_URL: http://127.0.0.1:4566
+      AWS_REGION: ap-northeast-2
+      AWS_SECRET_ACCESS_KEY: test
       DATABASE_URL: postgresql://shopport:shopport@127.0.0.1:5432/shopport
       EXPO_PUBLIC_API_URL: http://10.0.2.2:4000
       EXPO_PUBLIC_E2E_MODE: 1
@@ -90,6 +107,7 @@ jobs:
       MAESTRO_CLI_NO_ANALYTICS: 1
       ORG_GRADLE_PROJECT_reactNativeArchitectures: x86_64
       PROVIDER_API_KEY: maestro-provider-key
+      RAW_ASSET_BUCKET: shopport-assets-raw
     steps:
       - uses: actions/checkout@v7
         with:
@@ -112,6 +130,26 @@ jobs:
       - run: pnpm --dir shopport-fe install --frozen-lockfile
       - name: Start Maestro API and recovery proxy
         run: |
+          node --input-type=module <<'NODE'
+          import { createRequire } from "node:module";
+
+          const require = createRequire(`${process.cwd()}/shopport-be/package.json`);
+          const { CreateBucketCommand, S3Client } = require("@aws-sdk/client-s3");
+          const s3 = new S3Client({
+            credentials: { accessKeyId: "test", secretAccessKey: "test" },
+            endpoint: process.env.AWS_ENDPOINT_URL,
+            forcePathStyle: true,
+            region: process.env.AWS_REGION,
+          });
+          await s3.send(
+            new CreateBucketCommand({
+              Bucket: process.env.RAW_ASSET_BUCKET,
+              CreateBucketConfiguration: {
+                LocationConstraint: process.env.AWS_REGION,
+              },
+            }),
+          );
+          NODE
           pnpm --dir shopport-be db:migrate
           PORT=4001 pnpm --dir shopport-be start:maestro > "$RUNNER_TEMP/maestro-api.log" 2>&1 &
           for attempt in $(seq 1 30); do

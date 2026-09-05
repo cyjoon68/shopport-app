@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-const runId = "0198a122-0c00-7000-8000-000000000091";
+const runId = "run-1757110000000-native";
 const threadId = "0198a122-0c00-7000-8000-000000000092";
 const envelopes = [
   { id: "1", chunk: { type: "RUN_STARTED", runId, threadId } },
