@@ -29,6 +29,7 @@ jobs:
       - run: pnpm --dir shopport-fe install --frozen-lockfile
       - run: ./scripts/check-submodules.sh
       - run: node ./scripts/check-graphql-contract.mjs
+      - run: node --test scripts/android-recovery-proxy.test.mjs scripts/verify-android-recovery.test.mjs
       - run: pnpm --dir shopport-fe check
       - run: pnpm --dir shopport-fe test:coverage
       - run: pnpm --dir shopport-fe codegen && git -C shopport-fe diff --exit-code
@@ -109,17 +110,31 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - run: pnpm --dir shopport-be install --frozen-lockfile
       - run: pnpm --dir shopport-fe install --frozen-lockfile
-      - name: Start Maestro API
+      - name: Start Maestro API and recovery proxy
         run: |
           pnpm --dir shopport-be db:migrate
-          pnpm --dir shopport-be start:maestro > "$RUNNER_TEMP/maestro-api.log" 2>&1 &
+          PORT=4001 pnpm --dir shopport-be start:maestro > "$RUNNER_TEMP/maestro-api.log" 2>&1 &
           for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:4000/health/ready > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4001/health/ready > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4001/health/ready > /dev/null || {
+            cat "$RUNNER_TEMP/maestro-api.log"
+            exit 1
+          }
+          PORT=4000 \
+            UPSTREAM_URL=http://127.0.0.1:4001 \
+            RECOVERY_RESULTS="$RUNNER_TEMP/shopport-maestro" \
+            node scripts/android-recovery-proxy.mjs > "$RUNNER_TEMP/recovery-proxy.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4000/__recovery__/health > /dev/null; then
               exit 0
             fi
             sleep 1
           done
-          cat "$RUNNER_TEMP/maestro-api.log"
+          cat "$RUNNER_TEMP/recovery-proxy.log"
           exit 1
       - name: Install Maestro
         run: |
@@ -145,6 +160,7 @@ jobs:
           path: |
             ${{ runner.temp }}/shopport-maestro
             ${{ runner.temp }}/maestro-api.log
+            ${{ runner.temp }}/recovery-proxy.log
           retention-days: 7
 
   secrets:

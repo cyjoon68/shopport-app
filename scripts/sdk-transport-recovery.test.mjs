@@ -8,6 +8,7 @@ import { createRequire } from "node:module";
 import test from "node:test";
 
 import { xhrHttpStream } from "../shopport-fe/node_modules/@tanstack/ai-client/dist/esm/index.js";
+import { StreamProcessor } from "../shopport-fe/node_modules/@tanstack/ai/dist/esm/client.js";
 
 const requireFromBackend = createRequire(
   new URL("../shopport-be/package.json", import.meta.url),
@@ -27,6 +28,9 @@ const expectedProductIds = Array.from(
 const expectedEventTypes = [
   "CUSTOM",
   "RUN_STARTED",
+  "TOOL_CALL_START",
+  "TOOL_CALL_ARGS",
+  "TOOL_CALL_END",
   "TOOL_CALL_RESULT",
   "TEXT_MESSAGE_START",
   "TEXT_MESSAGE_CONTENT",
@@ -293,7 +297,7 @@ const assertAttempt = async ({
   assert.equal(resumed.headers["last-event-id"], transport.faultEventId);
 
   const eventResult = await pool.query(
-    "select id::text, chunk from ai_run_events where run_id = $1 order by id",
+    "select id::text, chunk from ai_run_events where run_id = $1 order by ai_run_events.id",
     [runId],
   );
   const eventIds = eventResult.rows.map(({ id }) => id);
@@ -302,6 +306,7 @@ const assertAttempt = async ({
     eventIds.every(
       (id, index) => index === 0 || BigInt(id) > BigInt(eventIds[index - 1]),
     ),
+    JSON.stringify(eventIds),
   );
   assert.equal(new Set(eventIds).size, eventIds.length);
   assert.deepEqual(
@@ -311,6 +316,17 @@ const assertAttempt = async ({
   assert.deepEqual(
     chunks.map(({ type }) => type),
     expectedEventTypes,
+    JSON.stringify({
+      chunks: chunks.map(({ message, type }) => ({ message, type })),
+      requests: transport.requests.map(
+        ({ envelopes, headers, method, path }) => ({
+          envelopes,
+          lastEventId: headers["last-event-id"] ?? null,
+          method,
+          path,
+        }),
+      ),
+    }),
   );
   const deliveredIds = transport.requests.flatMap(({ envelopes }) =>
     envelopes.map(({ id }) => id),
@@ -332,6 +348,19 @@ const assertAttempt = async ({
   const products = JSON.parse(toolResult.content).products;
   const productIds = products.map(({ id }) => id).sort();
   assert.deepEqual(productIds, expectedProductIds);
+  const processor = new StreamProcessor();
+  chunks.forEach((chunk) => processor.processChunk(chunk));
+  const processedToolResult = processor
+    .getMessages()
+    .flatMap(({ parts }) => parts)
+    .find(({ type }) => type === "tool-result");
+  assert.ok(processedToolResult);
+  assert.deepEqual(
+    JSON.parse(processedToolResult.content)
+      .products.map(({ id }) => id)
+      .sort(),
+    expectedProductIds,
+  );
   const messageIds = chunks
     .filter(({ type }) => type.startsWith("TEXT_MESSAGE"))
     .map(({ messageId }) => messageId);
