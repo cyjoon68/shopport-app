@@ -4,7 +4,10 @@ import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import test from "node:test";
 
-import { xhrHttpStream } from "../shopport-fe/node_modules/@tanstack/ai-client/dist/esm/index.js";
+import {
+  ChatClient,
+  xhrHttpStream,
+} from "../shopport-fe/node_modules/@tanstack/ai-client/dist/esm/index.js";
 
 const createNodeXhrContractShim = () => {
   const state = {
@@ -173,4 +176,102 @@ test("installed xhrHttpStream joinRun reaches an authenticated server from offse
       transportEvidence: "node-xhrFactory-contract-shim",
     })}\n`,
   );
+});
+
+test("installed xhrHttpStream does not retry a rejected expired replay", async () => {
+  const runId = "0198a122-0c00-7000-8000-000000000003";
+  let requestCount = 0;
+  const server = createServer((_request, response) => {
+    requestCount += 1;
+    response.writeHead(410, { "content-type": "application/json" });
+    response.end(JSON.stringify({ message: "Run replay expired" }));
+  });
+
+  await listen(server);
+  try {
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+    const connection = xhrHttpStream(
+      `http://127.0.0.1:${address.port}/v1/ai/chat`,
+      {
+        reconnect: { delayMs: 1, maxAttempts: 5 },
+        xhrFactory: createNodeXhrContractShim,
+      },
+    );
+    assert.ok(connection.joinRun);
+
+    await assert.rejects(
+      async () => {
+        for await (const _chunk of connection.joinRun(runId)) void _chunk;
+      },
+      /status: 410/u,
+    );
+    assert.equal(requestCount, 1);
+  } finally {
+    await close(server);
+  }
+});
+
+test("installed ChatClient clears a terminal replay resume and does not rejoin it", async () => {
+  const runId = "0198a122-0c00-7000-8000-000000000004";
+  const threadId = "0198a122-0c00-7000-8000-000000000005";
+  let joinCount = 0;
+  let stored = {
+    messages: [
+      {
+        id: "0198a122-0c00-7000-8000-000000000006",
+        parts: [{ content: "question", type: "text" }],
+        role: "user",
+      },
+    ],
+    resume: { resumeState: { runId, threadId } },
+  };
+  const persistence = {
+    getItem: () => stored,
+    removeItem: () => undefined,
+    setItem: (_id, state) => {
+      stored = state;
+    },
+  };
+  const connection = {
+    async *connect() {},
+    async *joinRun(joinedRunId) {
+      joinCount += 1;
+      yield {
+        message: "Run replay expired",
+        runId: joinedRunId,
+        threadId,
+        type: "RUN_ERROR",
+      };
+    },
+  };
+  const loading = [];
+  let resolveError;
+  const surfacedError = new Promise((resolve) => {
+    resolveError = resolve;
+  });
+  const first = new ChatClient({
+    connection,
+    onError: resolveError,
+    onLoadingChange: (value) => loading.push(value),
+    persistence,
+    threadId,
+  });
+  first.attach();
+
+  const error = await surfacedError;
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(error.message, "Run replay expired");
+  assert.equal(joinCount, 1);
+  assert.equal("resume" in stored, false);
+  assert.deepEqual(loading, [true, false]);
+  first.detach();
+  first.dispose();
+
+  const second = new ChatClient({ connection, persistence, threadId });
+  second.attach();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(joinCount, 1);
+  second.detach();
+  second.dispose();
 });
