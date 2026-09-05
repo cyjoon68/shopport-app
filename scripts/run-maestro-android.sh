@@ -6,6 +6,7 @@ set -eu
 : "${MAESTRO_API_URL:=http://127.0.0.1:4000}"
 
 app_id="com.cyjoon68.shopport"
+dev_client_url="exp+shopport://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
 metro_pid=""
 metro_log_raw="$MAESTRO_RESULTS/metro.raw.log"
 
@@ -193,6 +194,15 @@ open_conversation() {
   conversation_id=$1
   output=$2
   assert_uuid "$conversation_id"
+  if ! adb shell pidof "$app_id" >/dev/null 2>&1; then
+    adb shell am start -W \
+      -a android.intent.action.VIEW \
+      -c android.intent.category.BROWSABLE \
+      -d "$dev_client_url" \
+      --ez EXDevMenuDisableAutoLaunch true \
+      "$app_id" > "${output%.txt}-dev-client.txt"
+    wait_for_app
+  fi
   adb shell am start -W \
     -a android.intent.action.VIEW \
     -c android.intent.category.BROWSABLE \
@@ -514,11 +524,7 @@ for recovery_attempt in $(seq 1 5); do
     -H 'content-type: application/json' \
     -d '{}' \
     "$RECOVERY_PROXY_URL/release" > "$attempt_directory/release.json"
-  adb shell am start -W \
-    -a android.intent.action.VIEW \
-    -c android.intent.category.BROWSABLE \
-    -d "shopport:///?id=$thread_id" \
-    "$app_id" > "$attempt_directory/deep-link.txt"
+  open_conversation "$thread_id" "$attempt_directory/deep-link.txt"
   wait_for_proxy complete "$attempt_directory/complete-state.json"
   assert_proxy_evidence "$attempt_directory/complete-state.json"
   run_maestro \
