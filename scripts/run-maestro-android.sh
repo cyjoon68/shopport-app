@@ -70,6 +70,9 @@ wait_for_app() {
       grep -Eq 'Continue|카카오로 시작하기|메뉴 열기' "$output"; then
       return
     fi
+    if grep -q 'There was a problem loading the project' "$output"; then
+      return 1
+    fi
     sleep 1
   done
   return 1
@@ -197,7 +200,6 @@ open_conversation() {
   if ! adb shell pidof "$app_id" >/dev/null 2>&1; then
     adb shell am start -W \
       -a android.intent.action.VIEW \
-      -c android.intent.category.BROWSABLE \
       -d "$dev_client_url" \
       --ez EXDevMenuDisableAutoLaunch true \
       "$app_id" > "${output%.txt}-dev-client.txt"
