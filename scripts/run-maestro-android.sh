@@ -348,10 +348,11 @@ install_failure_trigger() {
     );
     CREATE TRIGGER e2e_force_draft_failure
     BEFORE INSERT ON draft
-    WHEN NEW.conversation_id = '$conversation_id' AND NEW.text = '$after_text'
+    WHEN NEW.conversation_id = '$conversation_id'
     BEGIN
       INSERT INTO e2e_draft_write_audit (conversation_id, attempted_text)
-      VALUES (NEW.conversation_id, NEW.text);
+      SELECT NEW.conversation_id, NEW.text
+      WHERE NEW.text = '$after_text';
       SELECT RAISE(FAIL, 'e2e forced draft write failure');
     END;
   " > /dev/null

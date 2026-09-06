@@ -301,20 +301,27 @@ test("RAISE(FAIL) records the exact attempt and preserves the prior draft", asyn
       );
       CREATE TRIGGER e2e_force_draft_failure
       BEFORE INSERT ON draft
-      WHEN NEW.conversation_id = '${threadId}' AND NEW.text = '${afterText}'
+      WHEN NEW.conversation_id = '${threadId}'
       BEGIN
         INSERT INTO e2e_draft_write_audit (conversation_id, attempted_text)
-        VALUES (NEW.conversation_id, NEW.text);
+        SELECT NEW.conversation_id, NEW.text
+        WHERE NEW.text = '${afterText}';
         SELECT RAISE(FAIL, 'e2e forced draft write failure');
       END;
     `);
+    const replaceDraft = database.prepare(
+      "INSERT OR REPLACE INTO draft (conversation_id, text, asset_id, asset_uri, updated_at) VALUES (?, ?, ?, ?, ?)",
+    );
     assert.throws(
-      () =>
-        database
-          .prepare(
-            "INSERT OR REPLACE INTO draft (conversation_id, text, asset_id, asset_uri, updated_at) VALUES (?, ?, ?, ?, ?)",
-          )
-          .run(threadId, afterText, null, null, 2),
+      () => replaceDraft.run(threadId, "", null, null, 2),
+      /e2e forced draft write failure/u,
+    );
+    assert.throws(
+      () => replaceDraft.run(threadId, afterText.slice(0, -1), null, null, 3),
+      /e2e forced draft write failure/u,
+    );
+    assert.throws(
+      () => replaceDraft.run(threadId, afterText, null, null, 4),
       /e2e forced draft write failure/u,
     );
     database.close();
